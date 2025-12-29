@@ -42,12 +42,11 @@ export const createOfficer = async (req, res, next) => {
     const {
       tinNumber,
       title,
-      bio,
-      priceMin,
-      priceMax,
-      isAvailable,
+      experienceYears,
+      serviceCategories, // Expected: array of ServiceCategory ObjectIds
     } = req.body;
 
+    // Basic required fields validation
     if (!tinNumber || !title) {
       return res.status(400).json({
         status: "fail",
@@ -55,20 +54,76 @@ export const createOfficer = async (req, res, next) => {
       });
     }
 
+    // Optional: validate that serviceCategories is an array if provided
+    if (serviceCategories && !Array.isArray(serviceCategories)) {
+      return res.status(400).json({
+        status: "fail",
+        message: "serviceCategories must be an array of category IDs.",
+      });
+    }
+
+    // Create the officer
     const officer = await Officer.create({
       tinNumber,
       title,
-      bio,
-      priceMin,
-      priceMax,
-      isAvailable,
+
+      // Note: serviceCategories is NOT stored on Officer model currently
+      // We're only using it here to create assignments
     });
+
+    // If serviceCategories were provided, create Assignment documents
+    if (serviceCategories && serviceCategories.length > 0) {
+      // Assume the creator is a super-admin/user — you may get this from req.user
+      const assignedBy = req.user?._id; // Adjust based on your auth middleware
+
+      if (!assignedBy) {
+        // Fallback or error if no admin is available
+        return res.status(400).json({
+          status: "fail",
+          message: "Assigned by (admin) is required to create assignments.",
+        });
+      }
+
+      const assignments = serviceCategories.map((categoryId) => ({
+        officer: officer._id,
+        serviceCategory: categoryId,
+        assignedBy,
+        assignmentType: "OFFICER_CATEGORY",
+        experienceYears: experienceYears || 0,
+        // or "ADMIN_CATEGORY" if needed
+        // experienceYears can be added later if required
+      }));
+
+      // Bulk create assignments (efficient)
+      await Assignment.insertMany(assignments);
+    }
+
+    // Optionally populate the officer with assignments or categories before responding
+    const populatedOfficer = await Officer.findById(officer._id)
+      // .populate('assignments') // if you add a virtual or ref later
+      .lean();
 
     return res.status(201).json({
       status: "success",
-      data: { officer },
+      data: { officer: populatedOfficer },
     });
   } catch (error) {
+    // Handle unique constraint violation for tinNumber or duplicate assignments
+    if (error.code === 11000) {
+      if (error.keyPattern?.tinNumber) {
+        return res.status(409).json({
+          status: "fail",
+          message: "An officer with this TIN number already exists.",
+        });
+      }
+      if (error.keyPattern?.officer && error.keyPattern?.serviceCategory) {
+        return res.status(409).json({
+          status: "fail",
+          message: "One or more service categories are already assigned to this officer.",
+        });
+      }
+    }
+
     next(error);
   }
 };
