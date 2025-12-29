@@ -34,7 +34,7 @@ export const createOfficer = async (req, res) => {
         message: "Service category is required",
       });
     }
-
+    console.lop("Service Category ID:", serviceCategory);
     // Create officer with REQUIRED fields only
     const officer = await Officer.create({
       tinNumber,
@@ -61,7 +61,7 @@ export const createOfficer = async (req, res) => {
 export const getAllOfficers = async (req, res) => {
   try {
     const officers = await Officer.find()
-      .populate("serviceCategory", "name")
+      .populate("serviceCategory")
       .sort({ rating: -1 });
 
     res.status(200).json({
