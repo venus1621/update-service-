@@ -28,6 +28,13 @@ export const createOfficer = async (req, res) => {
       }
     });
 
+    if (!erviceCategory) {
+      return res.status(400).json({
+        success: false,
+        message: "Service category is required",
+      });
+    }
+
     // Create officer with REQUIRED fields only
     const officer = await Officer.create({
       tinNumber,
