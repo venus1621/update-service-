@@ -98,7 +98,7 @@ const userSchema = new mongoose.Schema(
 
 /* -------------------- Indexes -------------------- */
 
-userSchema.index({ phoneNumber: 1 }, { unique: true });
+// Note: phoneNumber already has unique: true in schema definition
 userSchema.index({ role: 1, active: 1 });
 
 /* -------------------- Virtuals -------------------- */

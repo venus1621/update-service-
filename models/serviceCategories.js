@@ -13,7 +13,6 @@ const serviceCategorySchema = new Schema(
       unique: true,
       trim: true,
       lowercase: true,
-      index: true,
     },
 
   
@@ -29,7 +28,6 @@ const serviceCategorySchema = new Schema(
     isActive: {
       type: Boolean,
       default: true,
-      index: true,
     },
 
     disabledAt: {
@@ -45,8 +43,8 @@ const serviceCategorySchema = new Schema(
 
 /* -------------------- Indexes -------------------- */
 
-serviceCategorySchema.index({ name: 1 });
-serviceCategorySchema.index({ isActive: 1 });
+// Compound index for common queries
+serviceCategorySchema.index({ name: 1, isActive: 1 });
 
 /* -------------------- Middleware -------------------- */
 

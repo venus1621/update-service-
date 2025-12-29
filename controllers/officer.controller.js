@@ -8,7 +8,26 @@ import Officer from "../models/Officer.js";
  * Remove forbidden fields from update payload
  * (required fields must NEVER be changed)
  */
+const FORBIDDEN_UPDATE_FIELDS = [
+  "tinNumber",      // immutable identifier
+  "verified",       // admin-only
+  "verifiedAt",     // admin-only
+  "verifiedBy",     // admin-only
+  "rating",         // calculated field
+  "reviewCount",    // calculated field
+  "isActive",       // admin-only (use suspend method)
+  "suspendedAt",    // system-managed
+  "createdAt",      // system-managed
+  "updatedAt",      // system-managed
+];
 
+const sanitizeUpdatePayload = (payload) => {
+  const sanitized = { ...payload };
+  FORBIDDEN_UPDATE_FIELDS.forEach((field) => {
+    delete sanitized[field];
+  });
+  return sanitized;
+};
 
 /* ======================================================
    CREATE OFFICER

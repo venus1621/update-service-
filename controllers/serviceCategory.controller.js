@@ -102,13 +102,12 @@ export const getServiceCategoryById = async (req, res) => {
 export const updateServiceCategory = async (req, res) => {
   try {
     const { id } = req.params;
-    const { name, description, icon, isActive } = req.body;
+    const { name, description, isActive } = req.body;
 
     const updateData = {};
 
     if (name) updateData.name = name.trim().toLowerCase();
     if (description !== undefined) updateData.description = description;
-    if (icon !== undefined) updateData.icon = icon;
     if (typeof isActive === "boolean") updateData.isActive = isActive;
 
     const category = await ServiceCategory.findByIdAndUpdate(

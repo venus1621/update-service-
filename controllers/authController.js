@@ -7,18 +7,19 @@ import User from "../models/User.js";
 ====================================================== */
 
 const signToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
+  return jwt.sign({ id }, process.env.JWT_SECRET || "fallback-secret-change-me", {
+    expiresIn: process.env.JWT_EXPIRES_IN || "90d",
   });
 };
 
 const createSendToken = (user, statusCode, res) => {
   const token = signToken(user._id);
 
+  // Default to 90 days if JWT_COOKIE_EXPIRES_IN is not set
+  const cookieExpiresIn = process.env.JWT_COOKIE_EXPIRES_IN || 90;
+
   const cookieOptions = {
-    expires: new Date(
-      Date.now() + process.env.JWT_COOKIE_EXPIRES_IN * 24 * 60 * 60 * 1000
-    ),
+    expires: new Date(Date.now() + cookieExpiresIn * 24 * 60 * 60 * 1000),
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
   };
@@ -44,13 +45,15 @@ const createSendToken = (user, statusCode, res) => {
  */
 export const signup = async (req, res, next) => {
   try {
-    const {
-      name,
-      phoneNumber,
-      password,
-      passwordConfirm,
-      
-    } = req.body;
+    const { name, phoneNumber, password, passwordConfirm } = req.body;
+
+    // Validate required fields
+    if (!name || !phoneNumber || !password || !passwordConfirm) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Name, phone number, password, and password confirmation are required.",
+      });
+    }
 
     const newUser = await User.create({
       name,
@@ -179,6 +182,14 @@ export const restrictTo = (...roles) => {
 export const getMe = async (req, res, next) => {
   try {
     const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found.",
+      });
+    }
+
     res.status(200).json({
       status: "success",
       data: { user },
@@ -193,9 +204,24 @@ export const getMe = async (req, res, next) => {
  */
 export const updatePassword = async (req, res, next) => {
   try {
+    const { currentPassword, newPassword, passwordConfirm } = req.body;
+
+    // Validate required fields
+    if (!currentPassword || !newPassword || !passwordConfirm) {
+      return res.status(400).json({
+        status: "fail",
+        message: "Current password, new password, and password confirmation are required.",
+      });
+    }
+
     const user = await User.findById(req.user.id).select("+password");
 
-    const { currentPassword, newPassword, passwordConfirm } = req.body;
+    if (!user) {
+      return res.status(404).json({
+        status: "fail",
+        message: "User not found.",
+      });
+    }
 
     if (!(await user.correctPassword(currentPassword, user.password))) {
       return res.status(401).json({
