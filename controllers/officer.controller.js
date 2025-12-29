@@ -1,4 +1,6 @@
 import Officer from "../models/Officer.js";
+import Assignment from "../models/Assignment.js";
+import ServiceCategory from "../models/serviceCategories.js";
 
 /* ======================================================
    UTILS
@@ -36,6 +38,13 @@ const sanitizeUpdatePayload = (payload) => {
  * Required fields:
  * - tinNumber
  * - title
+ * 
+ * Optional fields:
+ * - serviceCategories (array of category IDs)
+ * - experienceYears (used for assignments)
+ * 
+ * Note: bio, priceMin, priceMax are NOT set during creation.
+ * Officers can update these fields later via updateOfficer.
  */
 export const createOfficer = async (req, res, next) => {
   try {
@@ -54,7 +63,7 @@ export const createOfficer = async (req, res, next) => {
       });
     }
 
-    // Optional: validate that serviceCategories is an array if provided
+    // Validate serviceCategories is an array if provided
     if (serviceCategories && !Array.isArray(serviceCategories)) {
       return res.status(400).json({
         status: "fail",
@@ -62,53 +71,66 @@ export const createOfficer = async (req, res, next) => {
       });
     }
 
-    // Create the officer
+    // Validate that all service category IDs exist
+    if (serviceCategories && serviceCategories.length > 0) {
+      const validCategories = await ServiceCategory.find({
+        _id: { $in: serviceCategories },
+      });
+
+      if (validCategories.length !== serviceCategories.length) {
+        return res.status(400).json({
+          status: "fail",
+          message: "One or more service category IDs are invalid.",
+        });
+      }
+    }
+
+    // Create the officer with required fields only
+    // bio, priceMin, priceMax will be updated by the officer later
     const officer = await Officer.create({
       tinNumber,
       title,
-
-      // Note: serviceCategories is NOT stored on Officer model currently
-      // We're only using it here to create assignments
     });
 
-    // If serviceCategories were provided, create Assignment documents
+    // Create assignments for service categories if provided
+    let createdAssignments = [];
     if (serviceCategories && serviceCategories.length > 0) {
-      // Assume the creator is a super-admin/user — you may get this from req.user
-      const assignedBy = req.user?._id; // Adjust based on your auth middleware
+      const assignedBy = req.user?._id;
 
       if (!assignedBy) {
-        // Fallback or error if no admin is available
+        // Rollback: delete the officer if no admin is available
+        await Officer.findByIdAndDelete(officer._id);
         return res.status(400).json({
           status: "fail",
-          message: "Assigned by (admin) is required to create assignments.",
+          message: "Authentication required to create assignments.",
         });
       }
 
-      const assignments = serviceCategories.map((categoryId) => ({
+      const assignmentDocs = serviceCategories.map((categoryId) => ({
         officer: officer._id,
         serviceCategory: categoryId,
         assignedBy,
         assignmentType: "OFFICER_CATEGORY",
         experienceYears: experienceYears || 0,
-        // or "ADMIN_CATEGORY" if needed
-        // experienceYears can be added later if required
       }));
 
-      // Bulk create assignments (efficient)
-      await Assignment.insertMany(assignments);
+      createdAssignments = await Assignment.insertMany(assignmentDocs);
     }
 
-    // Optionally populate the officer with assignments or categories before responding
-    const populatedOfficer = await Officer.findById(officer._id)
-      // .populate('assignments') // if you add a virtual or ref later
+    // Fetch officer with assignments for response
+    const assignments = await Assignment.find({ officer: officer._id })
+      .populate("serviceCategory", "name description")
       .lean();
 
     return res.status(201).json({
       status: "success",
-      data: { officer: populatedOfficer },
+      data: {
+        officer: officer.toObject(),
+        assignments,
+      },
     });
   } catch (error) {
-    // Handle unique constraint violation for tinNumber or duplicate assignments
+    // Handle unique constraint violations
     if (error.code === 11000) {
       if (error.keyPattern?.tinNumber) {
         return res.status(409).json({
