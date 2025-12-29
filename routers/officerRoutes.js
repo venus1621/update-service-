@@ -6,57 +6,22 @@ import {
   updateOfficer,
   verifyOfficer,
   suspendOfficer,
+  deleteOfficer,
+  superAdminUpdateOfficer,
 } from "../controllers/officer.controller.js";
-
-import { protect, restrictTo } from "../controllers/authController.js";
 
 const router = express.Router();
 
-/* ======================================================
-   PUBLIC / AUTHENTICATED ACCESS
-====================================================== */
-
-/**
- * GET /api/v1/officers
- * List officers (filters, pagination handled in controller)
- */
+router.post("/", createOfficer);
 router.get("/", getAllOfficers);
-
-/**
- * GET /api/v1/officers/:id
- * Get single officer profile
- */
 router.get("/:id", getOfficerById);
 
-/* ======================================================
-   ADMIN / SUPER-ADMIN ONLY
-====================================================== */
+router.put("/:id", updateOfficer); // officer self-update
+router.put("/admin/:id", superAdminUpdateOfficer);
 
-router.use(protect);
-router.use(restrictTo("admin", "super-admin"));
+router.patch("/verify/:id", verifyOfficer);
+router.patch("/suspend/:id", suspendOfficer);
 
-/**
- * POST /api/v1/officers
- * Create officer (required fields enforced)
- */
-router.post("/", createOfficer);
-
-/**
- * PATCH /api/v1/officers/:id
- * Update officer (required fields NOT mutable)
- */
-router.patch("/:id", updateOfficer);
-
-/**
- * PATCH /api/v1/officers/:id/verify
- * Verify officer
- */
-router.patch("/:id/verify", verifyOfficer);
-
-/**
- * PATCH /api/v1/officers/:id/suspend
- * Soft-suspend officer
- */
-router.patch("/:id/suspend", suspendOfficer);
+router.delete("/:id", deleteOfficer);
 
 export default router;

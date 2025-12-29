@@ -27,7 +27,18 @@ const officerSchema = new Schema(
       maxlength: 1000,
     },
 
-    /* -------------------- Pricing -------------------- */
+    experienceYears: {
+      type: Number,
+      min: 0,
+      default: 0,
+    },
+
+    serviceCategory: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "ServiceCategory",
+      required: true,
+      index: true,
+    },
 
     priceMin: {
       type: Number,
@@ -68,19 +79,6 @@ const officerSchema = new Schema(
       type: Boolean,
       default: false,
       index: true,
-    },
-
-    /* -------------------- Availability -------------------- */
-
-    isAvailable: {
-      type: Boolean,
-      default: true,
-    },
-
-    activeCases: {
-      type: Number,
-      default: 0,
-      min: 0,
     },
 
     /* -------------------- Lifecycle -------------------- */

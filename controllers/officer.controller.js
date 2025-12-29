@@ -1,279 +1,258 @@
 import Officer from "../models/Officer.js";
-import Assignment from "../models/Assignment.js";
-import ServiceCategory from "../models/serviceCategories.js";
+import mongoose from "mongoose";
 
-/* ======================================================
-   UTILS
-====================================================== */
-
-/**
- * Remove forbidden fields from update payload
- * (required fields must NEVER be changed)
- */
-const FORBIDDEN_UPDATE_FIELDS = [
-  "tinNumber",      // immutable identifier
-  "verified",       // admin-only
-  "verifiedAt",     // admin-only
-  "verifiedBy",     // admin-only
-  "rating",         // calculated field
-  "reviewCount",    // calculated field
-  "isActive",       // admin-only (use suspend method)
-  "suspendedAt",    // system-managed
-  "createdAt",      // system-managed
-  "updatedAt",      // system-managed
-];
-
-const sanitizeUpdatePayload = (payload) => {
-  const sanitized = { ...payload };
-  FORBIDDEN_UPDATE_FIELDS.forEach((field) => {
-    delete sanitized[field];
-  });
-  return sanitized;
-};
-
-/* ======================================================
-   CREATE OFFICER
-====================================================== */
-/**
- * Required fields:
- * - tinNumber
- * - title
- * 
- * Optional fields:
- * - serviceCategories (array of category IDs)
- * - experienceYears (used for assignments)
- * 
- * Note: bio, priceMin, priceMax are NOT set during creation.
- * Officers can update these fields later via updateOfficer.
- */
-export const createOfficer = async (req, res, next) => {
+/* =========================================================
+   CREATE OFFICER (Only required fields allowed)
+   ========================================================= */
+export const createOfficer = async (req, res) => {
   try {
-    const {
-      tinNumber,
-      title,
-      experienceYears,
-      serviceCategories, // Expected: array of ServiceCategory ObjectIds
-    } = req.body;
+    const { tinNumber, title, serviceCategory } = req.body;
 
-    // Basic required fields validation
-    if (!tinNumber || !title) {
-      return res.status(400).json({
-        status: "fail",
-        message: "TIN number and title are required.",
-      });
-    }
+    // ❌ Reject optional fields during creation
+    const forbiddenFields = [
+      "bio",
+      "experienceYears",
+      "priceMin",
+      "priceMax",
+      "rating",
+      "reviewCount",
+      "verified",
+      "isActive",
+    ];
 
-    // Validate serviceCategories is an array if provided
-    if (serviceCategories && !Array.isArray(serviceCategories)) {
-      return res.status(400).json({
-        status: "fail",
-        message: "serviceCategories must be an array of category IDs.",
-      });
-    }
-
-    // Validate that all service category IDs exist
-    if (serviceCategories && serviceCategories.length > 0) {
-      const validCategories = await ServiceCategory.find({
-        _id: { $in: serviceCategories },
-      });
-
-      if (validCategories.length !== serviceCategories.length) {
-        return res.status(400).json({
-          status: "fail",
-          message: "One or more service category IDs are invalid.",
-        });
+    forbiddenFields.forEach((field) => {
+      if (req.body[field] !== undefined) {
+        throw new Error(
+          `Field '${field}' cannot be set during officer creation`
+        );
       }
-    }
+    });
 
-    // Create the officer with required fields only
-    // bio, priceMin, priceMax will be updated by the officer later
+    // Create officer with REQUIRED fields only
     const officer = await Officer.create({
       tinNumber,
       title,
+      serviceCategory,
     });
 
-    // Create assignments for service categories if provided
-    let createdAssignments = [];
-    if (serviceCategories && serviceCategories.length > 0) {
-      const assignedBy = req.user?._id;
-
-      if (!assignedBy) {
-        // Rollback: delete the officer if no admin is available
-        await Officer.findByIdAndDelete(officer._id);
-        return res.status(400).json({
-          status: "fail",
-          message: "Authentication required to create assignments.",
-        });
-      }
-
-      const assignmentDocs = serviceCategories.map((categoryId) => ({
-        officer: officer._id,
-        serviceCategory: categoryId,
-        assignedBy,
-        assignmentType: "OFFICER_CATEGORY",
-        experienceYears: experienceYears || 0,
-      }));
-
-      createdAssignments = await Assignment.insertMany(assignmentDocs);
-    }
-
-    // Fetch officer with assignments for response
-    const assignments = await Assignment.find({ officer: officer._id })
-      .populate("serviceCategory", "name description")
-      .lean();
-
-    return res.status(201).json({
-      status: "success",
-      data: {
-        officer: officer.toObject(),
-        assignments,
-      },
+    res.status(201).json({
+      success: true,
+      message: "Officer created successfully",
+      data: officer,
     });
   } catch (error) {
-    // Handle unique constraint violations
-    if (error.code === 11000) {
-      if (error.keyPattern?.tinNumber) {
-        return res.status(409).json({
-          status: "fail",
-          message: "An officer with this TIN number already exists.",
-        });
-      }
-      if (error.keyPattern?.officer && error.keyPattern?.serviceCategory) {
-        return res.status(409).json({
-          status: "fail",
-          message: "One or more service categories are already assigned to this officer.",
-        });
-      }
-    }
-
-    next(error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-/* ======================================================
-   GET ALL OFFICERS
-====================================================== */
-export const getAllOfficers = async (req, res, next) => {
+/* =========================================================
+   GET ALL OFFICERS (Active only - middleware handles this)
+   ========================================================= */
+export const getAllOfficers = async (req, res) => {
   try {
-    const officers = await Officer.find().sort({
-      verified: -1,
-      rating: -1,
-      createdAt: -1,
-    });
+    const officers = await Officer.find()
+      .populate("serviceCategory", "name")
+      .sort({ rating: -1 });
 
     res.status(200).json({
-      status: "success",
-      results: officers.length,
-      data: { officers },
+      success: true,
+      count: officers.length,
+      data: officers,
     });
   } catch (error) {
-    next(error);
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-/* ======================================================
+/* =========================================================
    GET SINGLE OFFICER
-====================================================== */
-export const getOfficerById = async (req, res, next) => {
+   ========================================================= */
+export const getOfficerById = async (req, res) => {
   try {
-    const officer = await Officer.findById(req.params.id);
+    const officer = await Officer.findById(req.params.id).populate(
+      "serviceCategory",
+      "name"
+    );
 
     if (!officer) {
       return res.status(404).json({
-        status: "fail",
-        message: "Officer not found.",
+        success: false,
+        message: "Officer not found",
       });
     }
 
     res.status(200).json({
-      status: "success",
-      data: { officer },
+      success: true,
+      data: officer,
     });
   } catch (error) {
-    next(error);
+    res.status(400).json({
+      success: false,
+      message: "Invalid officer ID",
+    });
   }
 };
 
-/* ======================================================
-   UPDATE OFFICER (SAFE UPDATE)
-   ❌ Required fields cannot be changed
-====================================================== */
-export const updateOfficer = async (req, res, next) => {
+/* =========================================================
+   UPDATE OFFICER (Officer can update OPTIONAL fields only)
+   ========================================================= */
+export const updateOfficer = async (req, res) => {
   try {
-    const officer = await Officer.findById(req.params.id);
+    const allowedFields = ["bio", "experienceYears", "priceMin", "priceMax"];
 
-    if (!officer) {
-      return res.status(404).json({
-        status: "fail",
-        message: "Officer not found.",
+    const updates = {};
+    Object.keys(req.body).forEach((key) => {
+      if (allowedFields.includes(key)) {
+        updates[key] = req.body[key];
+      }
+    });
+
+    if (Object.keys(updates).length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "No valid fields provided for update",
       });
     }
 
-    const sanitizedPayload = sanitizeUpdatePayload(req.body);
-
-    Object.keys(sanitizedPayload).forEach((key) => {
-      officer[key] = sanitizedPayload[key];
+    const officer = await Officer.findByIdAndUpdate(req.params.id, updates, {
+      new: true,
+      runValidators: true,
     });
-
-    await officer.save();
-
-    res.status(200).json({
-      status: "success",
-      data: { officer },
-    });
-  } catch (error) {
-    next(error);
-  }
-};
-
-/* ======================================================
-   VERIFY OFFICER (ADMIN)
-====================================================== */
-export const verifyOfficer = async (req, res, next) => {
-  try {
-    const officer = await Officer.findById(req.params.id);
 
     if (!officer) {
       return res.status(404).json({
-        status: "fail",
-        message: "Officer not found.",
+        success: false,
+        message: "Officer not found",
       });
     }
 
-    await officer.verify(req.user._id);
-
     res.status(200).json({
-      status: "success",
-      message: "Officer verified successfully.",
-      data: { officer },
+      success: true,
+      message: "Officer updated successfully",
+      data: officer,
     });
   } catch (error) {
-    next(error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
 
-/* ======================================================
-   SUSPEND OFFICER (ADMIN)
-====================================================== */
-export const suspendOfficer = async (req, res, next) => {
+/* =========================================================
+   SUPER ADMIN UPDATE (Can update EVERYTHING)
+   ========================================================= */
+export const superAdminUpdateOfficer = async (req, res) => {
+  try {
+    const officer = await Officer.findByIdAndUpdate(req.params.id, req.body, {
+      new: true,
+      runValidators: true,
+    });
+
+    if (!officer) {
+      return res.status(404).json({
+        success: false,
+        message: "Officer not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Officer updated by super admin",
+      data: officer,
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* =========================================================
+   VERIFY OFFICER (Admin action)
+   ========================================================= */
+export const verifyOfficer = async (req, res) => {
   try {
     const officer = await Officer.findById(req.params.id);
 
     if (!officer) {
       return res.status(404).json({
-        status: "fail",
-        message: "Officer not found.",
+        success: false,
+        message: "Officer not found",
+      });
+    }
+
+    await officer.verify(req.user.id);
+
+    res.status(200).json({
+      success: true,
+      message: "Officer verified successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* =========================================================
+   SUSPEND OFFICER
+   ========================================================= */
+export const suspendOfficer = async (req, res) => {
+  try {
+    const officer = await Officer.findById(req.params.id);
+
+    if (!officer) {
+      return res.status(404).json({
+        success: false,
+        message: "Officer not found",
       });
     }
 
     await officer.suspend();
 
     res.status(200).json({
-      status: "success",
-      message: "Officer suspended successfully.",
-      data: { officer },
+      success: true,
+      message: "Officer suspended successfully",
     });
   } catch (error) {
-    next(error);
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
+  }
+};
+
+/* =========================================================
+   DELETE OFFICER (Hard delete - Super Admin)
+   ========================================================= */
+export const deleteOfficer = async (req, res) => {
+  try {
+    const officer = await Officer.findByIdAndDelete(req.params.id);
+
+    if (!officer) {
+      return res.status(404).json({
+        success: false,
+        message: "Officer not found",
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      message: "Officer deleted successfully",
+    });
+  } catch (error) {
+    res.status(400).json({
+      success: false,
+      message: error.message,
+    });
   }
 };
