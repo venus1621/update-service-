@@ -15,10 +15,12 @@ dotenv.config();
 
 const app = express();
 
-// Middleware
+// CORS Configuration - Allow ALL origins
 app.use(cors({
-  origin:"*",
+  origin: true, // Reflects the request origin, allowing all origins with credentials
   credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
