@@ -34,7 +34,7 @@ const officerSchema = new Schema(
     },
 
     serviceCategory: {
-      type: mongoose.Schema.Types.ObjectId,
+      type: Schema.Types.ObjectId,
       ref: "ServiceCategory",
       required: true,
       index: true,
