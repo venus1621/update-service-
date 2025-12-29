@@ -15,6 +15,7 @@ dotenv.config();
 
 const app = express();
 
+<<<<<<< HEAD
 // Middleware
 app.use(
   cors({
@@ -22,6 +23,15 @@ app.use(
     credentials: true, // Allows cookies, auth headers, etc.
   })
 );
+=======
+// CORS Configuration - Allow ALL origins
+app.use(cors({
+  origin: true, // Reflects the request origin, allowing all origins with credentials
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+}));
+>>>>>>> 1d103d1d60801a1a9e226cd3289668b56603041c
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
