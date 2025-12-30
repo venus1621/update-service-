@@ -61,6 +61,8 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
+    officer
+
     permissions: {
       type: [String],
       default: [],
