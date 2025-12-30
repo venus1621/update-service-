@@ -65,6 +65,10 @@ const userSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Officer",
     },
+    institution: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "GovernmentInstitution",
+    },
 
     permissions: {
       type: [String],

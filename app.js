@@ -9,6 +9,7 @@ import authRoutes from "./routers/authRoute.js";
 import officerRoutes from "./routers/officerRoutes.js";
 import serviceCategoriesRoutes from "./routers/serviceCategoriesRoute.js";
 import governmentInstitutionRoutes from "./routers/governmentInstitutionRoutes.js";
+import user from "./routers/userRoutes.js";
 // Load environment variables
 dotenv.config();
 
@@ -29,6 +30,7 @@ app.use(cookieParser());
 
 // Routes
 app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/users", user);
 app.use("/api/v1/officers", officerRoutes);
 app.use("/api/v1/service-categories", serviceCategoriesRoutes);
 app.use("/api/v1/government-institutions", governmentInstitutionRoutes);
