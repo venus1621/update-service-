@@ -5,12 +5,17 @@ import {
   revokeOfficerRole,
   assignInstitutionToAdmin,
   revokeInstitutionFromAdmin,
+  createAdmin,
 } from "../controllers/userController.js";
 
 const router = express.Router();
 
 router.get("/", getUsersByRole);
+router.post(
+  "/create-admin",
 
+  createAdmin
+);
 router.patch("/:id/assign-officer", assignOfficerRole);
 router.patch("/:id/revoke-officer", revokeOfficerRole);
 
