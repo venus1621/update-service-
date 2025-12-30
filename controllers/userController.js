@@ -218,6 +218,128 @@ export const assignInstitutionToAdmin = async (req, res) => {
   }
 };
 
+
+export const createAdmin = async (req, res) => {
+  const session = await mongoose.startSession();
+  session.startTransaction();
+
+  try {
+    const {
+      name,
+      phoneNumber,
+      password,
+      passwordConfirm,
+      role = "admin", // default to 'admin', allow 'super-admin'
+      institutionId, // optional: assign institution immediately
+    } = req.body;
+
+    // 1. Validation
+    if (!name || !phoneNumber || !password || !passwordConfirm) {
+      return sendError(
+        res,
+        400,
+        "Please provide name, phoneNumber, password, and passwordConfirm"
+      );
+    }
+
+    if (password !== passwordConfirm) {
+      return sendError(res, 400, "Passwords do not match");
+    }
+
+    if (!["admin", "super-admin"].includes(role)) {
+      return sendError(res, 400, "Role must be 'admin' or 'super-admin'");
+    }
+
+    // 2. Check if requester is super-admin
+    if (req.user.role !== "super-admin") {
+      return sendError(res, 403, "Only super-admin can create admin accounts");
+    }
+
+    // 3. Special case: Bootstrap first super-admin (if no admins exist)
+    const adminCount = await User.countDocuments({
+      role: { $in: ["admin", "super-admin"] },
+    });
+
+    if (adminCount === 0) {
+      // Allow anyone (or first user) to create the first super-admin
+      // You might want to restrict this in production via env flag
+      if (role !== "super-admin") {
+        return sendError(res, 400, "First account must be super-admin");
+      }
+    }
+
+    // 4. Check if phone already registered
+    const existingUser = await User.findOne({ phoneNumber }).session(session);
+    if (existingUser) {
+      return sendError(res, 409, "Phone number already registered");
+    }
+
+    // 5. Validate institution if provided
+    let institution = null;
+    if (institutionId) {
+      if (!mongoose.Types.ObjectId.isValid(institutionId)) {
+        return sendError(res, 400, "Invalid institution ID");
+      }
+      institution = await mongoose
+        .model("GovernmentInstitution")
+        .findById(institutionId);
+      if (!institution || institution.status !== "active") {
+        return sendError(res, 404, "Active institution not found");
+      }
+    }
+
+    // 6. Create the admin user
+    const adminUser = await User.create(
+      [
+        {
+          name: name.trim(),
+          phoneNumber: phoneNumber.trim(),
+          password,
+          passwordConfirm, // virtual field for validation
+          role,
+          institution: institutionId || null,
+          isPhoneVerified: true, // admins are trusted, skip verification
+        },
+      ],
+      { session }
+    );
+
+    const newAdmin = adminUser[0];
+
+    // Remove password from output
+    newAdmin.password = undefined;
+    newAdmin._passwordConfirm = undefined;
+
+    await session.commitTransaction();
+
+    return sendSuccess(
+      res,
+      201,
+      `${role.replace("-", " ")} created successfully`,
+      {
+        userId: newAdmin._id,
+        name: newAdmin.name,
+        phoneNumber: newAdmin.phoneNumber,
+        role: newAdmin.role,
+        institution: newAdmin.institution,
+        createdAt: newAdmin.createdAt,
+      }
+    );
+  } catch (error) {
+    await session.abortTransaction();
+
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((err) => err.message);
+      return sendError(res, 400, "Validation failed", errors);
+    }
+
+    console.error("Create Admin Error:", error);
+    return sendError(res, 500, "Failed to create admin account");
+  } finally {
+    session.endSession();
+  }
+};
+
 // @desc    Revoke institution from admin
 // @route   PATCH /api/users/:id/revoke-institution
 // @access  Private/Super-Admin
