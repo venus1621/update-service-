@@ -8,7 +8,6 @@ import cors from "cors";
 import authRoutes from "./routers/authRoute.js";
 import officerRoutes from "./routers/officerRoutes.js";
 import serviceCategoriesRoutes from "./routers/serviceCategoriesRoute.js";
-import assignmentRoutes from "./routers/assignmentroute.js";
 
 // Load environment variables
 dotenv.config();
@@ -16,12 +15,14 @@ dotenv.config();
 const app = express();
 
 // CORS Configuration - Allow ALL origins
-app.use(cors({
-  origin: true,
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-}));
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
@@ -30,7 +31,6 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/officers", officerRoutes);
 app.use("/api/v1/service-categories", serviceCategoriesRoutes);
-app.use("/api/v1/assignments", assignmentRoutes);
 
 // Health check route
 app.get("/", (req, res) => {

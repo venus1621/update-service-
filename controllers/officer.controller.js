@@ -8,39 +8,18 @@ export const createOfficer = async (req, res) => {
   try {
     const { tinNumber, title, serviceCategory } = req.body;
 
-    // ❌ Reject optional fields during creation
-    const forbiddenFields = [
-      "bio",
-      "experienceYears",
-      "priceMin",
-      "priceMax",
-      "rating",
-      "reviewCount",
-      "verified",
-      "isActive",
-    ];
-
-    forbiddenFields.forEach((field) => {
-      if (req.body[field] !== undefined) {
-        throw new Error(
-          `Field '${field}' cannot be set during officer creation`
-        );
-      }
-    });
-
-    if (serviceCategory === undefined) {
-      return res.status(400).json({
-        success: false,
-        message: "Service category is required",
-      });
-    }
-    console.lop("Service Category ID:", serviceCategory);
-    // Create officer with REQUIRED fields only
-    const officer = await Officer.create({
+    // Only allow the explicitly permitted fields during creation
+    const allowedFields = {
       tinNumber,
       title,
       serviceCategory,
-    });
+    };
+
+    // Log for debugging (fixed typo)
+    console.log("Service Category ID:", serviceCategory);
+
+    // Let Mongoose handle validation (required fields, types, uniqueness, etc.)
+    const officer = await Officer.create(allowedFields);
 
     res.status(201).json({
       success: true,
@@ -48,13 +27,33 @@ export const createOfficer = async (req, res) => {
       data: officer,
     });
   } catch (error) {
-    res.status(400).json({
+    // Handle Mongoose validation errors more gracefully
+    if (error.name === "ValidationError") {
+      const messages = Object.values(error.errors).map((err) => err.message);
+      return res.status(400).json({
+        success: false,
+        message: "Validation failed",
+        errors: messages,
+      });
+    }
+
+    // Handle duplicate TIN (unique index violation)
+    if (error.code === 11000) {
+      return res.status(400).json({
+        success: false,
+        message: "An officer with this TIN number already exists",
+      });
+    }
+
+    // Generic error (don't expose internal details in production)
+    res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Failed to create officer",
+      // Optionally include error.message only in development
+      // error: process.env.NODE_ENV === 'development' ? error.message : undefined,
     });
   }
 };
-
 /* =========================================================
    GET ALL OFFICERS (Active only - middleware handles this)
    ========================================================= */

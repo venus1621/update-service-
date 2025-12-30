@@ -61,7 +61,10 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
-    officer
+    officer: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Officer",
+    },
 
     permissions: {
       type: [String],
