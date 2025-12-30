@@ -8,7 +8,7 @@ import cors from "cors";
 import authRoutes from "./routers/authRoute.js";
 import officerRoutes from "./routers/officerRoutes.js";
 import serviceCategoriesRoutes from "./routers/serviceCategoriesRoute.js";
-
+import governmentInstitutionRoutes from "./routers/governmentInstitutionRoutes.js";
 // Load environment variables
 dotenv.config();
 
@@ -31,7 +31,7 @@ app.use(cookieParser());
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/officers", officerRoutes);
 app.use("/api/v1/service-categories", serviceCategoriesRoutes);
-
+app.use("/api/government-institutions", governmentInstitutionRoutes);
 // Health check route
 app.get("/", (req, res) => {
   res.json({
