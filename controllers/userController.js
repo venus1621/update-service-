@@ -229,7 +229,7 @@ export const createAdmin = async (req, res) => {
       phoneNumber,
       password,
       passwordConfirm,
-      role = "admin", // default to 'admin', allow 'super-admin'
+      role, // default to 'admin', allow 'super-admin'
       institutionId, // optional: assign institution immediately
     } = req.body;
 
