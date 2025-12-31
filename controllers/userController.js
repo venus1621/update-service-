@@ -218,7 +218,9 @@ export const assignInstitutionToAdmin = async (req, res) => {
   }
 };
 
-
+// @desc    Create admin user
+// @route   POST /api/users/create-admin
+// @access  Private/Super-Admin
 export const createAdmin = async (req, res) => {
   const session = await mongoose.startSession();
   session.startTransaction();
@@ -232,14 +234,10 @@ export const createAdmin = async (req, res) => {
       role, // default to 'admin', allow 'super-admin'
       institutionId, // optional: assign institution immediately
     } = req.body;
-    console.log(req.body);
-    // 1. Validation
+
+    // Validation
     if (!name || !phoneNumber || !password || !passwordConfirm) {
-      return sendError(
-        res,
-        400,
-        "Please provide name, phoneNumber, password, and passwordConfirm"
-      );
+      return sendError(res, 400, "Please provide name, phoneNumber, password, and passwordConfirm");
     }
 
     if (password !== passwordConfirm) {
@@ -250,27 +248,25 @@ export const createAdmin = async (req, res) => {
       return sendError(res, 400, "Role must be 'admin' or 'super-admin'");
     }
 
-    // 4. Check if phone already registered
+    // Check if phone already registered
     const existingUser = await User.findOne({ phoneNumber }).session(session);
     if (existingUser) {
       return sendError(res, 409, "Phone number already registered");
     }
 
-    // 5. Validate institution if provided
+    // Validate institution if provided
     let institution = null;
     if (institutionId) {
       if (!mongoose.Types.ObjectId.isValid(institutionId)) {
         return sendError(res, 400, "Invalid institution ID");
       }
-      institution = await mongoose
-        .model("GovernmentInstitution")
-        .findById(institutionId);
+      institution = await GovernmentInstitution.findById(institutionId);
       if (!institution || institution.status !== "active") {
         return sendError(res, 404, "Active institution not found");
       }
     }
 
-    // 6. Create the admin user
+    // Create the admin user
     const adminUser = await User.create(
       [
         {
@@ -294,19 +290,14 @@ export const createAdmin = async (req, res) => {
 
     await session.commitTransaction();
 
-    return sendSuccess(
-      res,
-      201,
-      `${role.replace("-", " ")} created successfully`,
-      {
-        userId: newAdmin._id,
-        name: newAdmin.name,
-        phoneNumber: newAdmin.phoneNumber,
-        role: newAdmin.role,
-        institution: newAdmin.institution,
-        createdAt: newAdmin.createdAt,
-      }
-    );
+    return sendSuccess(res, 201, `${role.replace("-", " ")} created successfully`, {
+      userId: newAdmin._id,
+      name: newAdmin.name,
+      phoneNumber: newAdmin.phoneNumber,
+      role: newAdmin.role,
+      institution: newAdmin.institution,
+      createdAt: newAdmin.createdAt,
+    });
   } catch (error) {
     await session.abortTransaction();
 
