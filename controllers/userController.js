@@ -232,7 +232,7 @@ export const createAdmin = async (req, res) => {
       role, // default to 'admin', allow 'super-admin'
       institutionId, // optional: assign institution immediately
     } = req.body;
-console.log(req.body);
+    console.log(req.body);
     // 1. Validation
     if (!name || !phoneNumber || !password || !passwordConfirm) {
       return sendError(
@@ -248,24 +248,6 @@ console.log(req.body);
 
     if (!["admin", "super-admin"].includes(role)) {
       return sendError(res, 400, "Role must be 'admin' or 'super-admin'");
-    }
-
-    // 2. Check if requester is super-admin
-    if (req.user.role !== "super-admin") {
-      return sendError(res, 403, "Only super-admin can create admin accounts");
-    }
-
-    // 3. Special case: Bootstrap first super-admin (if no admins exist)
-    const adminCount = await User.countDocuments({
-      role: { $in: ["admin", "super-admin"] },
-    });
-
-    if (adminCount === 0) {
-      // Allow anyone (or first user) to create the first super-admin
-      // You might want to restrict this in production via env flag
-      if (role !== "super-admin") {
-        return sendError(res, 400, "First account must be super-admin");
-      }
     }
 
     // 4. Check if phone already registered
