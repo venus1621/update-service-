@@ -232,7 +232,7 @@ export const createAdmin = async (req, res) => {
       role, // default to 'admin', allow 'super-admin'
       institutionId, // optional: assign institution immediately
     } = req.body;
-
+console.log(req.body);
     // 1. Validation
     if (!name || !phoneNumber || !password || !passwordConfirm) {
       return sendError(
