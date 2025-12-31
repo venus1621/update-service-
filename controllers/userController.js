@@ -74,8 +74,13 @@ export const assignOfficerRole = async (req, res) => {
     const { id } = req.params;
     const { officerId } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(officerId)) {
-      return res.status(400).json({ success: false, message: "Invalid user or officer ID" });
+    if (
+      !mongoose.Types.ObjectId.isValid(id) ||
+      !mongoose.Types.ObjectId.isValid(officerId)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user or officer ID" });
     }
 
     const [user, officer] = await Promise.all([
@@ -83,18 +88,30 @@ export const assignOfficerRole = async (req, res) => {
       Officer.findById(officerId).session(session),
     ]);
 
-    if (!user || !user.active) {
-      return res.status(404).json({ success: false, message: "User not found or inactive" });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found or inactive" });
     }
 
     if (!officer || !officer.isActive) {
-      return res.status(404).json({ success: false, message: "Officer profile not found or inactive" });
+      return res
+        .status(404)
+        .json({
+          success: false,
+          message: "Officer profile not found or inactive",
+        });
     }
 
     // Prevent duplicate assignment
     if (user.role === "officer" && user.officer?.toString() === officerId) {
       await session.abortTransaction();
-      return res.status(400).json({ success: false, message: "This user is already assigned to this officer profile" });
+      return res
+        .status(400)
+        .json({
+          success: false,
+          message: "This user is already assigned to this officer profile",
+        });
     }
 
     // Revoke previous officer role if switching
@@ -112,11 +129,19 @@ export const assignOfficerRole = async (req, res) => {
       .populate("officer", "title tinNumber serviceCategory")
       .lean();
 
-    return res.status(200).json({ success: true, message: "Officer role assigned successfully", data: updatedUser });
+    return res
+      .status(200)
+      .json({
+        success: true,
+        message: "Officer role assigned successfully",
+        data: updatedUser,
+      });
   } catch (error) {
     await session.abortTransaction();
     console.error("Error:", error);
-    return res.status(500).json({ success: false, message: "Failed to assign officer role" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to assign officer role" });
   } finally {
     session.endSession();
   }
@@ -197,7 +222,7 @@ export const assignInstitutionToAdmin = async (req, res) => {
       GovernmentInstitution.findById(institutionId),
     ]);
 
-    if (!user || !user.active) {
+    if (!user) {
       return res
         .status(404)
         .json({ success: false, message: "User not found or inactive" });
