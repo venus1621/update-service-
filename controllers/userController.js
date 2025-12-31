@@ -3,20 +3,6 @@ import Officer from "../models/Officer.js";
 import GovernmentInstitution from "../models/GovernmentInstitution.js";
 import mongoose from "mongoose";
 
-// Standardized responses
-const sendSuccess = (res, message, data = null, meta = null) => {
-  const response = { success: true, message };
-  if (data !== null) response.data = data;
-  if (meta) response.meta = meta;
-  return res.status(200).json(response);
-};
-
-const sendError = (res, statusCode, message, errors = null) => {
-  const response = { success: false, message };
-  if (errors) response.errors = errors;
-  return res.status(statusCode).json(response);
-};
-
 // @desc    Get users by role (with filters & search)
 // @route   GET /api/users?role=citizen&search=john&limit=20
 // @access  Private/Admin
@@ -31,10 +17,9 @@ export const getUsersByRole = async (req, res) => {
       limit = 50,
     } = req.query;
 
-    // Only allow valid roles
     const validRoles = ["citizen", "officer", "admin", "super-admin"];
     if (role && !validRoles.includes(role)) {
-      return sendError(res, 400, "Invalid role specified");
+      return res.status(400).json({ success: false, message: "Invalid role specified" });
     }
 
     const query = { active: true };
@@ -66,13 +51,15 @@ export const getUsersByRole = async (req, res) => {
       .limit(parseInt(limit))
       .lean();
 
-    return sendSuccess(res, "Users fetched successfully", users, {
-      total: users.length,
-      filteredBy: { role, search },
+    return res.status(200).json({
+      success: true,
+      message: "Users fetched successfully",
+      data: users,
+      meta: { total: users.length, filteredBy: { role, search } },
     });
   } catch (error) {
-    console.error("Get Users By Role Error:", error);
-    return sendError(res, 500, "Failed to fetch users");
+    console.error("Error:", error);
+    return res.status(500).json({ success: false, message: "Failed to fetch users" });
   }
 };
 
@@ -88,7 +75,7 @@ export const assignOfficerRole = async (req, res) => {
     const { officerId } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(officerId)) {
-      return sendError(res, 400, "Invalid user or officer ID");
+      return res.status(400).json({ success: false, message: "Invalid user or officer ID" });
     }
 
     const [user, officer] = await Promise.all([
@@ -97,17 +84,17 @@ export const assignOfficerRole = async (req, res) => {
     ]);
 
     if (!user || !user.active) {
-      return sendError(res, 404, "User not found or inactive");
+      return res.status(404).json({ success: false, message: "User not found or inactive" });
     }
 
     if (!officer || !officer.isActive) {
-      return sendError(res, 404, "Officer profile not found or inactive");
+      return res.status(404).json({ success: false, message: "Officer profile not found or inactive" });
     }
 
     // Prevent duplicate assignment
     if (user.role === "officer" && user.officer?.toString() === officerId) {
       await session.abortTransaction();
-      return sendError(res, 400, "This user is already assigned to this officer profile");
+      return res.status(400).json({ success: false, message: "This user is already assigned to this officer profile" });
     }
 
     // Revoke previous officer role if switching
@@ -125,14 +112,11 @@ export const assignOfficerRole = async (req, res) => {
       .populate("officer", "title tinNumber serviceCategory")
       .lean();
 
-    return sendSuccess(res, "Officer role assigned successfully", updatedUser);
+    return res.status(200).json({ success: true, message: "Officer role assigned successfully", data: updatedUser });
   } catch (error) {
     await session.abortTransaction();
-    console.error("Assign Officer Error:", error);
-    if (error.code === 11000) {
-      return sendError(res, 400, "This officer profile is already assigned to another user");
-    }
-    return sendError(res, 500, "Failed to assign officer role");
+    console.error("Error:", error);
+    return res.status(500).json({ success: false, message: "Failed to assign officer role" });
   } finally {
     session.endSession();
   }
@@ -146,32 +130,31 @@ export const revokeOfficerRole = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return sendError(res, 400, "Invalid user ID");
+      return res.status(400).json({ success: false, message: "Invalid user ID" });
     }
 
     const user = await User.findById(id);
 
     if (!user || !user.active) {
-      return sendError(res, 404, "User not found or inactive");
+      return res.status(404).json({ success: false, message: "User not found or inactive" });
     }
 
     if (user.role !== "officer") {
-      return sendError(res, 400, "User is not an officer");
+      return res.status(400).json({ success: false, message: "User is not an officer" });
     }
 
     user.role = "citizen";
     user.officer = null;
     await user.save();
 
-    return sendSuccess(res, "Officer role revoked successfully", {
-      userId: user._id,
-      name: user.name,
-      previousRole: "officer",
-      newRole: "citizen",
+    return res.status(200).json({
+      success: true,
+      message: "Officer role revoked successfully",
+      data: { userId: user._id, name: user.name, previousRole: "officer", newRole: "citizen" },
     });
   } catch (error) {
-    console.error("Revoke Officer Error:", error);
-    return sendError(res, 500, "Failed to revoke officer role");
+    console.error("Error:", error);
+    return res.status(500).json({ success: false, message: "Failed to revoke officer role" });
   }
 };
 
@@ -184,7 +167,7 @@ export const assignInstitutionToAdmin = async (req, res) => {
     const { institutionId } = req.body;
 
     if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(institutionId)) {
-      return sendError(res, 400, "Invalid user or institution ID");
+      return res.status(400).json({ success: false, message: "Invalid user or institution ID" });
     }
 
     const [user, institution] = await Promise.all([
@@ -193,15 +176,15 @@ export const assignInstitutionToAdmin = async (req, res) => {
     ]);
 
     if (!user || !user.active) {
-      return sendError(res, 404, "User not found or inactive");
+      return res.status(404).json({ success: false, message: "User not found or inactive" });
     }
 
     if (!["admin", "super-admin"].includes(user.role)) {
-      return sendError(res, 403, "Only admins can be assigned to institutions");
+      return res.status(403).json({ success: false, message: "Only admins can be assigned to institutions" });
     }
 
     if (!institution || institution.status !== "active") {
-      return sendError(res, 404, "Institution not found or not active");
+      return res.status(404).json({ success: false, message: "Institution not found or not active" });
     }
 
     user.institution = institutionId;
@@ -211,10 +194,10 @@ export const assignInstitutionToAdmin = async (req, res) => {
       .populate("institution", "institutionName region contactEmail")
       .lean();
 
-    return sendSuccess(res, "Institution assigned successfully", updatedUser);
+    return res.status(200).json({ success: true, message: "Institution assigned successfully", data: updatedUser });
   } catch (error) {
-    console.error("Assign Institution Error:", error);
-    return sendError(res, 500, "Failed to assign institution");
+    console.error("Error:", error);
+    return res.status(500).json({ success: false, message: "Failed to assign institution" });
   }
 };
 
@@ -237,32 +220,32 @@ export const createAdmin = async (req, res) => {
 
     // Validation
     if (!name || !phoneNumber || !password || !passwordConfirm) {
-      return sendError(res, 400, "Please provide name, phoneNumber, password, and passwordConfirm");
+      return res.status(400).json({ success: false, message: "Please provide name, phoneNumber, password, and passwordConfirm" });
     }
 
     if (password !== passwordConfirm) {
-      return sendError(res, 400, "Passwords do not match");
+      return res.status(400).json({ success: false, message: "Passwords do not match" });
     }
 
     if (!["admin", "super-admin"].includes(role)) {
-      return sendError(res, 400, "Role must be 'admin' or 'super-admin'");
+      return res.status(400).json({ success: false, message: "Role must be 'admin' or 'super-admin'" });
     }
 
     // Check if phone already registered
     const existingUser = await User.findOne({ phoneNumber }).session(session);
     if (existingUser) {
-      return sendError(res, 409, "Phone number already registered");
+      return res.status(409).json({ success: false, message: "Phone number already registered" });
     }
 
     // Validate institution if provided
     let institution = null;
     if (institutionId) {
       if (!mongoose.Types.ObjectId.isValid(institutionId)) {
-        return sendError(res, 400, "Invalid institution ID");
+        return res.status(400).json({ success: false, message: "Invalid institution ID" });
       }
       institution = await GovernmentInstitution.findById(institutionId);
       if (!institution || institution.status !== "active") {
-        return sendError(res, 404, "Active institution not found");
+        return res.status(404).json({ success: false, message: "Active institution not found" });
       }
     }
 
@@ -290,24 +273,28 @@ export const createAdmin = async (req, res) => {
 
     await session.commitTransaction();
 
-    return sendSuccess(res, 201, `${role.replace("-", " ")} created successfully`, {
-      userId: newAdmin._id,
-      name: newAdmin.name,
-      phoneNumber: newAdmin.phoneNumber,
-      role: newAdmin.role,
-      institution: newAdmin.institution,
-      createdAt: newAdmin.createdAt,
+    return res.status(201).json({
+      success: true,
+      message: `${role.replace("-", " ")} created successfully`,
+      data: {
+        userId: newAdmin._id,
+        name: newAdmin.name,
+        phoneNumber: newAdmin.phoneNumber,
+        role: newAdmin.role,
+        institution: newAdmin.institution,
+        createdAt: newAdmin.createdAt,
+      },
     });
   } catch (error) {
     await session.abortTransaction();
 
     if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err) => err.message);
-      return sendError(res, 400, "Validation failed", errors);
+      return res.status(400).json({ success: false, message: "Validation failed", errors });
     }
 
     console.error("Create Admin Error:", error);
-    return sendError(res, 500, "Failed to create admin account");
+    return res.status(500).json({ success: false, message: "Failed to create admin account" });
   } finally {
     session.endSession();
   }
@@ -321,29 +308,29 @@ export const revokeInstitutionFromAdmin = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return sendError(res, 400, "Invalid user ID");
+      return res.status(400).json({ success: false, message: "Invalid user ID" });
     }
 
     const user = await User.findById(id);
 
     if (!user || !user.active) {
-      return sendError(res, 404, "User not found or inactive");
+      return res.status(404).json({ success: false, message: "User not found or inactive" });
     }
 
     if (!user.institution) {
-      return sendError(res, 400, "User has no assigned institution");
+      return res.status(400).json({ success: false, message: "User has no assigned institution" });
     }
 
     user.institution = null;
     await user.save();
 
-    return sendSuccess(res, "Institution revoked successfully", {
-      userId: user._id,
-      name: user.name,
-      role: user.role,
+    return res.status(200).json({
+      success: true,
+      message: "Institution revoked successfully",
+      data: { userId: user._id, name: user.name, role: user.role },
     });
   } catch (error) {
     console.error("Revoke Institution Error:", error);
-    return sendError(res, 500, "Failed to revoke institution");
+    return res.status(500).json({ success: false, message: "Failed to revoke institution" });
   }
 };
