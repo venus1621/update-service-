@@ -1,0 +1,147 @@
+{
+  "info": {
+    "name": "User Controller - Postman Collection",
+    "_postman_id": "user-controller-collection",
+    "description": "Collection for User controller endpoints (get users, assign/revoke officer/institution, create admin)",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Get Users by Role",
+      "request": {
+        "method": "GET",
+        "header": [
+          {
+            "key": "Authorization",
+            "value": "Bearer {{authToken}}",
+            "type": "text"
+          }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/users?role=citizen&search=&limit=50",
+          "host": [
+            "{{baseUrl}}"
+          ],
+          "path": [
+            "users"
+          ],
+          "query": [
+            { "key": "role", "value": "citizen" },
+            { "key": "search", "value": "" },
+            { "key": "isOnline", "value": "" },
+            { "key": "isPhoneVerified", "value": "" },
+            { "key": "sort", "value": "-createdAt" },
+            { "key": "limit", "value": "50" }
+          ]
+        },
+        "description": "Fetch users with optional filters: role, search, isOnline, isPhoneVerified, sort, limit"
+      }
+    },
+    {
+      "name": "Create Admin",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"Admin Name\",\n  \"phoneNumber\": \"+250000000000\",\n  \"password\": \"Password123!\",\n  \"passwordConfirm\": \"Password123!\",\n  \"role\": \"admin\",\n  \"institutionId\": \"<optional-institution-id>\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/create-admin",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", "create-admin"]
+        },
+        "description": "Create an admin or super-admin. Fields: name, phoneNumber, password, passwordConfirm, role (admin|super-admin), institutionId (optional)"
+      }
+    },
+    {
+      "name": "Assign Officer Role",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"officerId\": \"<officerObjectId>\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/:id/assign-officer",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", ":id", "assign-officer"],
+          "variable": [ { "key": "id", "value": "<userId>" } ]
+        },
+        "description": "Assign an officer profile to a user. Replace :id with userId. Body: { officerId }"
+      }
+    },
+    {
+      "name": "Revoke Officer Role",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/users/:id/revoke-officer",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", ":id", "revoke-officer"],
+          "variable": [ { "key": "id", "value": "<userId>" } ]
+        },
+        "description": "Revoke officer role from user. Replace :id with userId. No body required."
+      }
+    },
+    {
+      "name": "Assign Institution to Admin",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"institutionId\": \"<institutionObjectId>\"\n}"
+        },
+        "url": {
+          "raw": "{{baseUrl}}/users/:id/assign-institution",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", ":id", "assign-institution"],
+          "variable": [ { "key": "id", "value": "<userId>" } ]
+        },
+        "description": "Assign an institution to an admin/super-admin. Replace :id with userId. Body: { institutionId }"
+      }
+    },
+    {
+      "name": "Revoke Institution From Admin",
+      "request": {
+        "method": "PATCH",
+        "header": [
+          { "key": "Authorization", "value": "Bearer {{authToken}}" }
+        ],
+        "url": {
+          "raw": "{{baseUrl}}/users/:id/revoke-institution",
+          "host": ["{{baseUrl}}"],
+          "path": ["users", ":id", "revoke-institution"],
+          "variable": [ { "key": "id", "value": "<userId>" } ]
+        },
+        "description": "Revoke assigned institution from admin. Replace :id with userId."
+      }
+    }
+  ]
+}

@@ -135,6 +135,9 @@ export const revokeOfficerRole = async (req, res) => {
 
     const user = await User.findById(id);
 
+    console.log("User fetched for revoking officer role:", user);
+    console.log(id);
+
     if (!user || !user.active) {
       return res.status(404).json({ success: false, message: "User not found or inactive" });
     }
@@ -285,6 +288,7 @@ export const createAdmin = async (req, res) => {
         createdAt: newAdmin.createdAt,
       },
     });
+
   } catch (error) {
     await session.abortTransaction();
 
