@@ -130,20 +130,27 @@ export const revokeOfficerRole = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: "Invalid user ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user ID" });
     }
 
     const user = await User.findById(id);
 
     console.log("User fetched for revoking officer role:", user);
     console.log(id);
+    console.log(user);
 
-    if (!user || !user.active) {
-      return res.status(404).json({ success: false, message: "User not found or inactive" });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found or inactive" });
     }
 
     if (user.role !== "officer") {
-      return res.status(400).json({ success: false, message: "User is not an officer" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User is not an officer" });
     }
 
     user.role = "citizen";
@@ -153,11 +160,18 @@ export const revokeOfficerRole = async (req, res) => {
     return res.status(200).json({
       success: true,
       message: "Officer role revoked successfully",
-      data: { userId: user._id, name: user.name, previousRole: "officer", newRole: "citizen" },
+      data: {
+        userId: user._id,
+        name: user.name,
+        previousRole: "officer",
+        newRole: "citizen",
+      },
     });
   } catch (error) {
     console.error("Error:", error);
-    return res.status(500).json({ success: false, message: "Failed to revoke officer role" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to revoke officer role" });
   }
 };
 
@@ -169,8 +183,13 @@ export const assignInstitutionToAdmin = async (req, res) => {
     const { id } = req.params;
     const { institutionId } = req.body;
 
-    if (!mongoose.Types.ObjectId.isValid(id) || !mongoose.Types.ObjectId.isValid(institutionId)) {
-      return res.status(400).json({ success: false, message: "Invalid user or institution ID" });
+    if (
+      !mongoose.Types.ObjectId.isValid(id) ||
+      !mongoose.Types.ObjectId.isValid(institutionId)
+    ) {
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user or institution ID" });
     }
 
     const [user, institution] = await Promise.all([
@@ -179,15 +198,23 @@ export const assignInstitutionToAdmin = async (req, res) => {
     ]);
 
     if (!user || !user.active) {
-      return res.status(404).json({ success: false, message: "User not found or inactive" });
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found or inactive" });
     }
 
     if (!["admin", "super-admin"].includes(user.role)) {
-      return res.status(403).json({ success: false, message: "Only admins can be assigned to institutions" });
+      return res.status(403).json({
+        success: false,
+        message: "Only admins can be assigned to institutions",
+      });
     }
 
     if (!institution || institution.status !== "active") {
-      return res.status(404).json({ success: false, message: "Institution not found or not active" });
+      return res.status(404).json({
+        success: false,
+        message: "Institution not found or not active",
+      });
     }
 
     user.institution = institutionId;
@@ -197,10 +224,16 @@ export const assignInstitutionToAdmin = async (req, res) => {
       .populate("institution", "institutionName region contactEmail")
       .lean();
 
-    return res.status(200).json({ success: true, message: "Institution assigned successfully", data: updatedUser });
+    return res.status(200).json({
+      success: true,
+      message: "Institution assigned successfully",
+      data: updatedUser,
+    });
   } catch (error) {
     console.error("Error:", error);
-    return res.status(500).json({ success: false, message: "Failed to assign institution" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to assign institution" });
   }
 };
 
@@ -223,32 +256,47 @@ export const createAdmin = async (req, res) => {
 
     // Validation
     if (!name || !phoneNumber || !password || !passwordConfirm) {
-      return res.status(400).json({ success: false, message: "Please provide name, phoneNumber, password, and passwordConfirm" });
+      return res.status(400).json({
+        success: false,
+        message:
+          "Please provide name, phoneNumber, password, and passwordConfirm",
+      });
     }
 
     if (password !== passwordConfirm) {
-      return res.status(400).json({ success: false, message: "Passwords do not match" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Passwords do not match" });
     }
 
     if (!["admin", "super-admin"].includes(role)) {
-      return res.status(400).json({ success: false, message: "Role must be 'admin' or 'super-admin'" });
+      return res.status(400).json({
+        success: false,
+        message: "Role must be 'admin' or 'super-admin'",
+      });
     }
 
     // Check if phone already registered
     const existingUser = await User.findOne({ phoneNumber }).session(session);
     if (existingUser) {
-      return res.status(409).json({ success: false, message: "Phone number already registered" });
+      return res
+        .status(409)
+        .json({ success: false, message: "Phone number already registered" });
     }
 
     // Validate institution if provided
     let institution = null;
     if (institutionId) {
       if (!mongoose.Types.ObjectId.isValid(institutionId)) {
-        return res.status(400).json({ success: false, message: "Invalid institution ID" });
+        return res
+          .status(400)
+          .json({ success: false, message: "Invalid institution ID" });
       }
       institution = await GovernmentInstitution.findById(institutionId);
       if (!institution || institution.status !== "active") {
-        return res.status(404).json({ success: false, message: "Active institution not found" });
+        return res
+          .status(404)
+          .json({ success: false, message: "Active institution not found" });
       }
     }
 
@@ -288,17 +336,20 @@ export const createAdmin = async (req, res) => {
         createdAt: newAdmin.createdAt,
       },
     });
-
   } catch (error) {
     await session.abortTransaction();
 
     if (error.name === "ValidationError") {
       const errors = Object.values(error.errors).map((err) => err.message);
-      return res.status(400).json({ success: false, message: "Validation failed", errors });
+      return res
+        .status(400)
+        .json({ success: false, message: "Validation failed", errors });
     }
 
     console.error("Create Admin Error:", error);
-    return res.status(500).json({ success: false, message: "Failed to create admin account" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to create admin account" });
   } finally {
     session.endSession();
   }
@@ -312,17 +363,23 @@ export const revokeInstitutionFromAdmin = async (req, res) => {
     const { id } = req.params;
 
     if (!mongoose.Types.ObjectId.isValid(id)) {
-      return res.status(400).json({ success: false, message: "Invalid user ID" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid user ID" });
     }
 
     const user = await User.findById(id);
 
-    if (!user || !user.active) {
-      return res.status(404).json({ success: false, message: "User not found or inactive" });
+    if (!user) {
+      return res
+        .status(404)
+        .json({ success: false, message: "User not found or inactive" });
     }
 
     if (!user.institution) {
-      return res.status(400).json({ success: false, message: "User has no assigned institution" });
+      return res
+        .status(400)
+        .json({ success: false, message: "User has no assigned institution" });
     }
 
     user.institution = null;
@@ -335,6 +392,8 @@ export const revokeInstitutionFromAdmin = async (req, res) => {
     });
   } catch (error) {
     console.error("Revoke Institution Error:", error);
-    return res.status(500).json({ success: false, message: "Failed to revoke institution" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to revoke institution" });
   }
 };
