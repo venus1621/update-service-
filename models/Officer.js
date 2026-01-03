@@ -15,6 +15,11 @@ const officerSchema = new Schema(
       index: true,
     },
 
+    institution: {
+      type: String,
+      required: [true, "Institution is required"],
+      trim: true,
+    },
     title: {
       type: String,
       required: [true, "Officer title is required"],

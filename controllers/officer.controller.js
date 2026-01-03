@@ -6,12 +6,13 @@ import mongoose from "mongoose";
    ========================================================= */
 export const createOfficer = async (req, res) => {
   try {
-    const { tinNumber, title, serviceCategory } = req.body;
+    const { tinNumber, title, serviceCategory, institution } = req.body;
 
     // Only allow the explicitly permitted fields during creation
     const allowedFields = {
       tinNumber,
       title,
+      institution,
       serviceCategory,
     };
 
