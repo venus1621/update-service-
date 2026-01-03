@@ -18,7 +18,7 @@ export const createOfficer = async (req, res) => {
 
     // Log for debugging (fixed typo)
     console.log("Service Category ID:", serviceCategory);
-
+    console.log("institution ", institution);
     // Let Mongoose handle validation (required fields, types, uniqueness, etc.)
     const officer = await Officer.create(allowedFields);
 
@@ -62,6 +62,7 @@ export const getAllOfficers = async (req, res) => {
   try {
     const officers = await Officer.find()
       .populate("serviceCategory")
+      .populate("institution")
       .sort({ rating: -1 });
 
     res.status(200).json({
@@ -82,10 +83,9 @@ export const getAllOfficers = async (req, res) => {
    ========================================================= */
 export const getOfficerById = async (req, res) => {
   try {
-    const officer = await Officer.findById(req.params.id).populate(
-      "serviceCategory",
-      "name"
-    );
+    const officer = await Officer.findById(req.params.id)
+      .populate("serviceCategory", "name")
+      .populate("institution");
 
     if (!officer) {
       return res.status(404).json({
