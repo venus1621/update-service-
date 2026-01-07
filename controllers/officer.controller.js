@@ -111,47 +111,99 @@ export const getOfficerById = async (req, res) => {
    ========================================================= */
 export const updateOfficer = async (req, res) => {
   try {
-    const allowedFields = ["bio", "experienceYears", "priceMin", "priceMax"];
+    // Fields allowed to be updated on the Officer document
+    const allowedOfficerFields = [
+      "title",
+      "institution",
+      "bio",
+      "experienceYears",
+      "priceMin",
+      "priceMax",
+      "serviceCategory",
+    ];
 
-    const updates = {};
+    // Optionally allow updating profileImage on the User document
+    const allowedUserFields = ["profileImage"];
+
+    // Extract updates for Officer model
+    const officerUpdates = {};
     Object.keys(req.body).forEach((key) => {
-      if (allowedFields.includes(key)) {
-        updates[key] = req.body[key];
+      if (allowedOfficerFields.includes(key)) {
+        officerUpdates[key] = req.body[key];
       }
     });
 
-    if (Object.keys(updates).length === 0) {
+    // Extract updates for User model (e.g., profileImage)
+    const userUpdates = {};
+    Object.keys(req.body).forEach((key) => {
+      if (allowedUserFields.includes(key)) {
+        userUpdates[key] = req.body[key];
+      }
+    });
+
+    if (
+      Object.keys(officerUpdates).length === 0 &&
+      Object.keys(userUpdates).length === 0
+    ) {
       return res.status(400).json({
         success: false,
         message: "No valid fields provided for update",
       });
     }
 
-    const officer = await Officer.findByIdAndUpdate(req.params.id, updates, {
-      new: true,
-      runValidators: true,
-    });
+    // Get the authenticated user (assumed to be attached to req.user by auth middleware)
+    const userId = req.user._id;
 
-    if (!officer) {
-      return res.status(404).json({
+    // Find the user and populate officerData to get the linked Officer document
+    const user = await User.findById(userId).select("officerData role").lean();
+
+    if (!user || user.role !== "officer" || !user.officerData) {
+      return res.status(403).json({
         success: false,
-        message: "Officer not found",
+        message:
+          "Access denied: Only verified officers can update their profile",
       });
     }
 
+    // Update the Officer document
+    const updatedOfficer = await Officer.findByIdAndUpdate(
+      user.officerData,
+      officerUpdates,
+      {
+        new: true,
+        runValidators: true,
+      }
+    );
+
+    if (!updatedOfficer) {
+      return res.status(404).json({
+        success: false,
+        message: "Officer profile not found",
+      });
+    }
+
+    // Optionally update User fields (like profileImage)
+    if (Object.keys(userUpdates).length > 0) {
+      await User.findByIdAndUpdate(userId, userUpdates, { new: true });
+    }
+
+    // Populate any necessary references if needed for response
+    await updatedOfficer.populate("serviceCategory");
+
     res.status(200).json({
       success: true,
-      message: "Officer updated successfully",
-      data: officer,
+      message: "Officer profile updated successfully",
+      data: updatedOfficer,
     });
   } catch (error) {
-    res.status(400).json({
+    console.error("Error updating officer:", error);
+    res.status(500).json({
       success: false,
-      message: error.message,
+      message: "Server error while updating officer profile",
+      error: error.message,
     });
   }
 };
-
 /* =========================================================
    SUPER ADMIN UPDATE (Can update EVERYTHING)
    ========================================================= */
