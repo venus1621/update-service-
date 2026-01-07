@@ -116,10 +116,9 @@ export const updateOfficer = async (req, res) => {
       "title",
       "institution",
       "bio",
-      "experienceYears",
       "priceMin",
       "priceMax",
-      "serviceCategory",
+      "Specializations",
     ];
 
     // Optionally allow updating profileImage on the User document
