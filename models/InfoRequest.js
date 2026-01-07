@@ -64,4 +64,6 @@ infoRequestSchema.pre("save", function (next) {
 infoRequestSchema.index({ createdBy: 1, status: 1 });
 infoRequestSchema.index({ serviceCategory: 1 });
 
-export const InfoRequest = mongoose.model("InfoRequest", infoRequestSchema);
+ const InfoRequest = mongoose.model("InfoRequest", infoRequestSchema);
+
+ export default InfoRequest;
