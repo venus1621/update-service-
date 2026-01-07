@@ -86,9 +86,14 @@ export const login = async (req, res, next) => {
    const user = await User.findOne({ phoneNumber })
      .select("+password")
      .populate("institution")
-     .populate("officerData")
-     .populate("officerData.serviceCategory");
-
+     .populate({
+       path: "officerData",
+       populate: {
+         path: "serviceCategory",
+         // Optional: select only needed fields from ServiceCategory
+         // select: "name description icon"
+       },
+     });
 
     if (!user || !(await user.correctPassword(password, user.password))) {
       return res.status(401).json({
