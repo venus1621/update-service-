@@ -1,6 +1,8 @@
 import User from "../models/User.js";
 import Officer from "../models/Officer.js";
 import GovernmentInstitution from "../models/GovernmentInstitution.js";
+import { initializeChapaPayment } from "../utils/chapa.js";
+
 import mongoose from "mongoose";
 
 // @desc    Get users by role (with filters & search)
@@ -19,7 +21,9 @@ export const getUsersByRole = async (req, res) => {
 
     const validRoles = ["citizen", "officer", "admin", "super-admin"];
     if (role && !validRoles.includes(role)) {
-      return res.status(400).json({ success: false, message: "Invalid role specified" });
+      return res
+        .status(400)
+        .json({ success: false, message: "Invalid role specified" });
     }
 
     const query = { active: true };
@@ -59,7 +63,9 @@ export const getUsersByRole = async (req, res) => {
     });
   } catch (error) {
     console.error("Error:", error);
-    return res.status(500).json({ success: false, message: "Failed to fetch users" });
+    return res
+      .status(500)
+      .json({ success: false, message: "Failed to fetch users" });
   }
 };
 
@@ -95,23 +101,19 @@ export const assignOfficerRole = async (req, res) => {
     }
 
     if (!officer || !officer.isActive) {
-      return res
-        .status(404)
-        .json({
-          success: false,
-          message: "Officer profile not found or inactive",
-        });
+      return res.status(404).json({
+        success: false,
+        message: "Officer profile not found or inactive",
+      });
     }
 
     // Prevent duplicate assignment
     if (user.role === "officer" && user.officer?.toString() === officerId) {
       await session.abortTransaction();
-      return res
-        .status(400)
-        .json({
-          success: false,
-          message: "This user is already assigned to this officer profile",
-        });
+      return res.status(400).json({
+        success: false,
+        message: "This user is already assigned to this officer profile",
+      });
     }
 
     // Revoke previous officer role if switching
@@ -129,13 +131,11 @@ export const assignOfficerRole = async (req, res) => {
       .populate("officer", "title tinNumber serviceCategory")
       .lean();
 
-    return res
-      .status(200)
-      .json({
-        success: true,
-        message: "Officer role assigned successfully",
-        data: updatedUser,
-      });
+    return res.status(200).json({
+      success: true,
+      message: "Officer role assigned successfully",
+      data: updatedUser,
+    });
   } catch (error) {
     await session.abortTransaction();
     console.error("Error:", error);
@@ -421,4 +421,102 @@ export const revokeInstitutionFromAdmin = async (req, res) => {
       .status(500)
       .json({ success: false, message: "Failed to revoke institution" });
   }
+};
+export const requestUpgradeToOfficer = async (req, res) => {
+  try {
+    // Only citizens can request upgrade
+    if (req.user.role !== "citizen") {
+      return res.status(400).json({
+        success: false,
+        message: "Only citizens can request to upgrade to officer",
+      });
+    }
+
+    const { tinNumber } = req.body;
+    const userId = req.user._id;
+
+    // Check if officer exists
+    const officer = await Officer.findOne({ tinNumber });
+    if (!officer) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid TIN number or officer not registered",
+      });
+    }
+
+    // Upgrade user role to officer
+    const user = await User.findOneAndUpdate(
+      { _id: userId, role: "citizen" },
+      { role: "officer", officerData: officer._id },
+      { new: true }
+    );
+
+    if (!user) {
+      return res.status(400).json({
+        success: false,
+        message: "Upgrade to officer request failed",
+      });
+    }
+
+    return res.status(200).json({
+      success: true,
+      message: "Upgrade to officer request successful",
+      user,
+    });
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Server error while upgrading to officer",
+      error: error.message,
+    });
+  }
+};
+export const purchaseConnects = async (req, res) => {
+  try {
+    const { connects } = req.body;
+    const user = await User.findById(req.user._id).select(
+      "name phone_number role connects"
+    );
+
+    if (!user) return res.status(404).json({ message: "User not found" });
+    if (user.role !== "officer") {
+      return res.status(403).json({ message: "You are not an officer" });
+    }
+
+    if (!connects || isNaN(connects) || connects <= 0) {
+      return res
+        .status(400)
+        .json({ message: "Valid connects amount is required" });
+    }
+
+    const price = connectCalculator(connects);
+
+    const chapa = await initializeChapaPayment({
+      amount: price,
+      currency: "ETB",
+      user,
+      payFor: "conn",
+      connects, // ✅ pass connects so it’s embedded in tx_ref
+    });
+
+    return res.status(200).json({
+      message: "Proceed to payment to complete connect purchase.",
+      chapa,
+    });
+  } catch (error) {
+    console.error("Error purchasing connects:", error);
+    return res
+      .status(500)
+      .json({ message: "Internal server error", error: error.message });
+  }
+};
+const connectCalculator = (connect) => {
+  const oneConnect = parseFloat(process.env.ONE_CONNECT);
+
+  if (isNaN(connect) || isNaN(oneConnect)) {
+    throw new Error("Invalid input or environment value");
+  }
+
+  const amount = connect * oneConnect;
+  return amount;
 };
