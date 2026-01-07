@@ -113,12 +113,12 @@ export const updateOfficer = async (req, res) => {
   try {
     // Fields allowed to be updated on the Officer document
     const allowedOfficerFields = [
-      "title",
-      "institution",
+      "fullName",
       "bio",
       "priceMin",
       "priceMax",
       "Specializations",
+      "profileImage",
     ];
 
     // Optionally allow updating profileImage on the User document
