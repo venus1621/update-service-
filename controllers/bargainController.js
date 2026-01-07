@@ -1,5 +1,5 @@
 import { Bargain } from "../models/Bargain.js";
-import { Application } from "../models/Application.js";
+import { Application } from "../models/application.js";
 
 export const createBargain =async (req,res)=>{
     const {applicationId,message ,price} = req.body;
