@@ -85,7 +85,8 @@ export const login = async (req, res, next) => {
 
     const user = await User.findOne({ phoneNumber })
       .select("+password")
-      .populate("institution");
+      .populate("institution")
+      .populate("officerData");
 
     if (!user || !(await user.correctPassword(password, user.password))) {
       return res.status(401).json({
