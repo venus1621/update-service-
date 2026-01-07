@@ -1,8 +1,8 @@
 import axios from "axios";
 import mongoose from "mongoose";
-import  Application  from "../models/Application.js";
+import Application from "../models/application.js"; // Consistent casing with actual file name
 import User from "../models/User.js"; // User is the default export in Models/User.js
-import  ChatRoom from "../Models/ChatRoom.js";
+import ChatRoom from "../models/ChatRoom.js"; // Fix folder casing for cross-platform
 
 // 🔹 Initialize Chapa payment
 export const initializeChapaPayment = async ({
