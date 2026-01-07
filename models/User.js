@@ -61,10 +61,11 @@ const userSchema = new mongoose.Schema(
       index: true,
     },
 
-    officer: {
+    officerData: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Officer",
     },
+
     institution: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "GovernmentInstitution",
