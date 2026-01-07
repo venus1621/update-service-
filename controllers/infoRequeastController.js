@@ -1,6 +1,6 @@
 import InfoRequest from "../models/InfoRequest.js"; // Fixed import name consistency
 import ServiceCategory from "../models/serviceCategories.js";
-import Application from "../models/Application.js"; // Fixed import name
+import Application from "../models/application.js"; // Fixed import name
 
 // CREATE Info Request
 export const createInfoRequest = async (req, res) => {
