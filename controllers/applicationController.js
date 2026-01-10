@@ -8,8 +8,9 @@ import { initializeChapaPayment } from "../utils/chapa.js"; // Fixed path conven
 // GET: Applications for a specific InfoRequest (for the requester)
 export const getApplicationsByInfoRequest = async (req, res) => {
   try {
-    const { infoRequestId } = req.params;
-
+    const infoRequestId = req.params.infoRequest;
+    console.log("Fetching applications for InfoRequest ID:", req.params);
+    console.log(infoRequestId);
     if (!mongoose.Types.ObjectId.isValid(infoRequestId)) {
       return res.status(400).json({ message: "Invalid infoRequest ID" });
     }

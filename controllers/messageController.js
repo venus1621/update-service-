@@ -9,7 +9,7 @@ export const sendMessage = async (req, res) => {
 
     if (
       !mongoose.Types.ObjectId.isValid(chatRoomId) ||
-      !mongsoose.Types.ObjectId.isValid(receiverId)
+      !mongssoose.Types.ObjectId.isValid(receiverId)
     ) {
       return res
         .status(400)

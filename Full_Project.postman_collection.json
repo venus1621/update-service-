@@ -1,0 +1,130 @@
+{
+  "info": {
+    "_postman_id": "a1b2c3d4-5678-90ab-cdef-1234567890ab",
+    "name": "Updated Service Category - Full API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000/api",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"name\": \"Test User\",\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"},
+            "url": {"raw": "{{baseUrl}}/auth/signup", "host": ["{{baseUrl}}"], "path": ["auth","signup"]}
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [{"key":"Content-Type","value":"application/json"}],
+            "body": {"mode":"raw","raw":"{\n  \"email\": \"user@example.com\",\n  \"password\": \"password123\"\n}"},
+            "url": {"raw": "{{baseUrl}}/auth/login", "host": ["{{baseUrl}}"], "path": ["auth","login"]}
+          }
+        },
+        {
+          "name": "Get Current User",
+          "request": {
+            "method": "GET",
+            "header": [{"key":"Authorization","value":"Bearer {{authToken}}"}],
+            "url": {"raw": "{{baseUrl}}/auth/me", "host": ["{{baseUrl}}"], "path": ["auth","me"]}
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Users By Role",
+          "request": {"method":"GET","header":[{"key":"Authorization","value":"Bearer {{authToken}}"}],"url":{"raw":"{{baseUrl}}/users","host":["{{baseUrl}}"],"path":["users"]}}
+        },
+        {
+          "name": "Create Admin",
+          "request": {"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"name\": \"Admin\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"adminpass\"\n}"},"url":{"raw":"{{baseUrl}}/users/create-admin","host":["{{baseUrl}}"],"path":["users","create-admin"]}}
+        },
+        {
+          "name": "Request Upgrade To Officer",
+          "request": {"method":"POST","header":[{"key":"Authorization","value":"Bearer {{authToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"reason\": \"I have the necessary qualifications\"\n}"},"url":{"raw":"{{baseUrl}}/users/requestUpgradeToOfficer","host":["{{baseUrl}}"],"path":["users","requestUpgradeToOfficer"]}}
+        }
+      ]
+    },
+    {
+      "name": "Service Categories",
+      "item": [
+        {"name":"Create Service Category","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"title\": \"My Service\",\n  \"description\": \"Description\"\n}"},"url":{"raw":"{{baseUrl}}/service-categories","host":["{{baseUrl}}"],"path":["service-categories"]}}},
+        {"name":"Get All Service Categories","request":{"method":"GET","url":{"raw":"{{baseUrl}}/service-categories","host":["{{baseUrl}}"],"path":["service-categories"]}}},
+        {"name":"Get Service Category By ID","request":{"method":"GET","url":{"raw":"{{baseUrl}}/service-categories/:id","host":["{{baseUrl}}"],"path":["service-categories",":id"]}}}
+      ]
+    },
+    {
+      "name": "Info Requests",
+      "item": [
+        {"name":"Get All Info Requests","request":{"method":"GET","url":{"raw":"{{baseUrl}}/info-requests","host":["{{baseUrl}}"],"path":["info-requests"]}}},
+        {"name":"Create Info Request","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{authToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"title\": \"Need info on service\",\n  \"details\": \"Please provide steps\"\n}"},"url":{"raw":"{{baseUrl}}/info-requests/create","host":["{{baseUrl}}"],"path":["info-requests","create"]}}},
+        {"name":"Get My Info Requests","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{authToken}}"}],"url":{"raw":"{{baseUrl}}/info-requests/my-requests","host":["{{baseUrl}}"],"path":["info-requests","my-requests"]}}},
+        {"name":"Update Info Request","request":{"method":"PATCH","header":[{"key":"Authorization","value":"Bearer {{authToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"title\": \"Updated title\"\n}"},"url":{"raw":"{{baseUrl}}/info-requests/:id","host":["{{baseUrl}}"],"path":["info-requests",":id"]}}}
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {"name":"Create Application","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{authToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"infoRequestId\": \"<id>\",\n  \"message\": \"I can help\"\n}"},"url":{"raw":"{{baseUrl}}/applications/createApplication","host":["{{baseUrl}}"],"path":["applications","createApplication"]}}},
+        {"name":"Get Applications By Info Request","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{authToken}}"}],"url":{"raw":"{{baseUrl}}/applications/getApplicationsByInfoRequest/:infoRequest","host":["{{baseUrl}}"],"path":["applications","getApplicationsByInfoRequest",":infoRequest"]}}},
+        {"name":"Accept Application","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{authToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"applicationId\": \"<id>\"\n}"},"url":{"raw":"{{baseUrl}}/applications/acceptApplication","host":["{{baseUrl}}"],"path":["applications","acceptApplication"]}}}
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {"name":"Send Message","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{authToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"chatRoomId\": \"<chatId>\",\n  \"text\": \"Hello\"\n}"},"url":{"raw":"{{baseUrl}}/messages/sendMessage","host":["{{baseUrl}}"],"path":["messages","sendMessage"]}}},
+        {"name":"Get Messages By ChatRoom","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{authToken}}"}],"url":{"raw":"{{baseUrl}}/messages/getMessages/:chatRoomId","host":["{{baseUrl}}"],"path":["messages","getMessages",":chatRoomId"]}}}
+      ]
+    },
+    {
+      "name": "Chatrooms",
+      "item": [
+        {"name":"Get User Chat Rooms","request":{"method":"GET","header":[{"key":"Authorization","value":"Bearer {{authToken}}"}],"url":{"raw":"{{baseUrl}}/chatrooms","host":["{{baseUrl}}"],"path":["chatrooms"]}}}
+      ]
+    },
+    {
+      "name": "Government Institutions",
+      "item": [
+        {"name":"Get All Institutions","request":{"method":"GET","url":{"raw":"{{baseUrl}}/government-institutions","host":["{{baseUrl}}"],"path":["government-institutions"]}}},
+        {"name":"Get Institution By ID","request":{"method":"GET","url":{"raw":"{{baseUrl}}/government-institutions/:id","host":["{{baseUrl}}"],"path":["government-institutions",":id"]}}},
+        {"name":"Create Institution (Admin)","request":{"method":"POST","header":[{"key":"Authorization","value":"Bearer {{authToken}}"},{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"name\": \"Ministry\",\n  \"address\": \"Address\"\n}"},"url":{"raw":"{{baseUrl}}/government-institutions","host":["{{baseUrl}}"],"path":["government-institutions"]}}}
+      ]
+    },
+    {
+      "name": "Officers",
+      "item": [
+        {"name":"Create Officer","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"name\": \"Officer A\",\n  \"email\": \"officer@example.com\"\n}"},"url":{"raw":"{{baseUrl}}/officers","host":["{{baseUrl}}"],"path":["officers"]}}},
+        {"name":"Get All Officers","request":{"method":"GET","url":{"raw":"{{baseUrl}}/officers","host":["{{baseUrl}}"],"path":["officers"]}}},
+        {"name":"Verify Officer","request":{"method":"PATCH","header":[{"key":"Authorization","value":"Bearer {{authToken}}"}],"url":{"raw":"{{baseUrl}}/officers/verify/:id","host":["{{baseUrl}}"],"path":["officers","verify",":id"]}}}
+      ]
+    },
+    {
+      "name": "Chapa",
+      "item": [
+        {"name":"Chapa Webhook (POST)","request":{"method":"POST","header":[{"key":"Content-Type","value":"application/json"}],"body":{"mode":"raw","raw":"{\n  \"event\": \"payment.success\"\n}"},"url":{"raw":"{{baseUrl}}/chapa/chapa-webhook","host":["{{baseUrl}}"],"path":["chapa","chapa-webhook"]}}},
+        {"name":"Chapa Webhook (GET)","request":{"method":"GET","url":{"raw":"{{baseUrl}}/chapa/chapa-webhook","host":["{{baseUrl}}"],"path":["chapa","chapa-webhook"]}}}
+      ]
+    }
+  ]
+}
