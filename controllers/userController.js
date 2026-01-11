@@ -43,7 +43,7 @@ export const getUsersByRole = async (req, res) => {
     const users = await User.find(query)
       .select("-password -permissions") // Hide sensitive fields
       .populate({
-        path: "officer",
+        path: "officerData",
         select: "title tinNumber serviceCategory",
         populate: { path: "serviceCategory", select: "name" },
       })
