@@ -1,0 +1,978 @@
+{
+  "info": {
+    "_postman_id": "service-category-api-collection",
+    "name": "Service Category API Collection",
+    "description": "Complete API collection for Service Category Management System",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Signup",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"John Doe\",\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\",\n  \"passwordConfirm\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/signup",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "signup"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"john.doe@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "login"]
+            }
+          }
+        },
+        {
+          "name": "Get Me",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "me"]
+            }
+          }
+        },
+        {
+          "name": "Update Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"currentPassword\": \"password123\",\n  \"newPassword\": \"newpassword123\",\n  \"newPasswordConfirm\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/updatePassword",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "updatePassword"]
+            }
+          }
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/auth/logout",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "auth", "logout"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Users by Role",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users"]
+            }
+          }
+        },
+        {
+          "name": "Create Admin",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin User\",\n  \"email\": \"admin@example.com\",\n  \"password\": \"admin123\",\n  \"passwordConfirm\": \"admin123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/create-admin",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "create-admin"]
+            }
+          }
+        },
+        {
+          "name": "Assign Officer Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:id/assign-officer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", ":id", "assign-officer"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Officer Role",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:id/revoke-officer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", ":id", "revoke-officer"]
+            }
+          }
+        },
+        {
+          "name": "Assign Institution to Admin",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"institutionId\": \"institution_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:id/assign-institution",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", ":id", "assign-institution"]
+            }
+          }
+        },
+        {
+          "name": "Revoke Institution from Admin",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/:id/revoke-institution",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", ":id", "revoke-institution"]
+            }
+          }
+        },
+        {
+          "name": "Request Upgrade to Officer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"reason\": \"I want to become an officer to help the community\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/requestUpgradeToOfficer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "requestUpgradeToOfficer"]
+            }
+          }
+        },
+        {
+          "name": "Purchase Connect",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"connects\": 10,\n  \"amount\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/users/purchaseConnect",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "users", "purchaseConnect"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Officers",
+      "item": [
+        {
+          "name": "Create Officer",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Officer Name\",\n  \"email\": \"officer@example.com\",\n  \"phone\": \"+1234567890\",\n  \"specialization\": \"Legal\",\n  \"experience\": \"5 years\",\n  \"userId\": \"user_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/officers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "officers"]
+            }
+          }
+        },
+        {
+          "name": "Get All Officers",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/officers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "officers"]
+            }
+          }
+        },
+        {
+          "name": "Get Officer by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/officers/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "officers", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Update Officer (Self)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"phone\": \"+1234567890\",\n  \"specialization\": \"Updated Specialization\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/officers/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "officers", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Update Officer (Admin)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Admin Updated Name\",\n  \"phone\": \"+1234567890\",\n  \"specialization\": \"Admin Updated Specialization\",\n  \"isActive\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/officers/admin/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "officers", "admin", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Verify Officer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"isVerified\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/officers/verify/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "officers", "verify", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Suspend Officer",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"suspensionReason\": \"Violation of policies\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/officers/suspend/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "officers", "suspend", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Delete Officer",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/officers/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "officers", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Service Categories",
+      "item": [
+        {
+          "name": "Create Service Category",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Legal Services\",\n  \"description\": \"Legal advice and representation\",\n  \"icon\": \"gavel\",\n  \"color\": \"#FF5722\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/service-categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "service-categories"]
+            }
+          }
+        },
+        {
+          "name": "Get All Service Categories",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/service-categories",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "service-categories"]
+            }
+          }
+        },
+        {
+          "name": "Get Service Category by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/service-categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "service-categories", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Update Service Category",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Legal Services\",\n  \"description\": \"Updated legal advice and representation\",\n  \"icon\": \"balance\",\n  \"color\": \"#2196F3\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/service-categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "service-categories", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Delete Service Category",
+          "request": {
+            "method": "DELETE",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/service-categories/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "service-categories", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Government Institutions",
+      "item": [
+        {
+          "name": "Get All Government Institutions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/government-institutions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "government-institutions"]
+            }
+          }
+        },
+        {
+          "name": "Get Government Institution by ID",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/government-institutions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "government-institutions", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Create Government Institution",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Ministry of Justice\",\n  \"description\": \"Government department responsible for justice\",\n  \"address\": \"123 Government Street\",\n  \"phone\": \"+1234567890\",\n  \"email\": \"justice@gov.gov\",\n  \"website\": \"https://justice.gov\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/government-institutions",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "government-institutions"]
+            }
+          }
+        },
+        {
+          "name": "Update Government Institution",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Ministry Name\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/government-institutions/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "government-institutions", ":id"]
+            }
+          }
+        },
+        {
+          "name": "Suspend Government Institution",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"suspensionReason\": \"Administrative review\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/government-institutions/:id/suspend",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "government-institutions", ":id", "suspend"]
+            }
+          }
+        },
+        {
+          "name": "Reactivate Government Institution",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/government-institutions/:id/reactivate",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "government-institutions", ":id", "reactivate"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Info Requests",
+      "item": [
+        {
+          "name": "Get All Info Requests (Public)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/infoRequest",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "infoRequest"]
+            }
+          }
+        },
+        {
+          "name": "Create Info Request",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Need legal advice for business registration\",\n  \"description\": \"I need help with registering my new business and understanding the legal requirements.\",\n  \"category\": \"Legal\",\n  \"urgency\": \"medium\",\n  \"budget\": \"500-1000\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/infoRequest/create",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "infoRequest", "create"]
+            }
+          }
+        },
+        {
+          "name": "Get My Info Requests",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/infoRequest/my-requests",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "infoRequest", "my-requests"]
+            }
+          }
+        },
+        {
+          "name": "Update Info Request",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated title\",\n  \"description\": \"Updated description\",\n  \"status\": \"open\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/infoRequest/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "infoRequest", ":id"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "Create Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"infoRequest\": \"info_request_id_here\",\n  \"proposal\": \"I can help you with business registration. I have 10 years of experience in this area.\",\n  \"estimatedTime\": \"2 weeks\",\n  \"cost\": 750\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/application/createApplication",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "application", "createApplication"]
+            }
+          }
+        },
+        {
+          "name": "Get Applications by Info Request",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/application/getApplicationsByInfoRequest/:infoRequest",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "application", "getApplicationsByInfoRequest", ":infoRequest"]
+            }
+          }
+        },
+        {
+          "name": "Get My Applications",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/application/getMyApplications",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "application", "getMyApplications"]
+            }
+          }
+        },
+        {
+          "name": "Accept Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicationId\": \"application_id_here\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/application/acceptApplication",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "application", "acceptApplication"]
+            }
+          }
+        },
+        {
+          "name": "Reject Application",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"applicationId\": \"application_id_here\",\n  \"reason\": \"Not suitable for this request\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/application/rejectApplication",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "application", "rejectApplication"]
+            }
+          }
+        },
+        {
+          "name": "Update Application",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"proposal\": \"Updated proposal text\",\n  \"estimatedTime\": \"3 weeks\",\n  \"cost\": 800\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/application/updateApplication/:applicationId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "application", "updateApplication", ":applicationId"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Messages",
+      "item": [
+        {
+          "name": "Send Message",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"chatRoomId\": \"chat_room_id_here\",\n  \"receiverId\": \"receiver_user_id_here\",\n  \"content\": \"Hello, I can help you with your request.\",\n  \"type\": \"text\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/messages/sendMessage",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "messages", "sendMessage"]
+            }
+          }
+        },
+        {
+          "name": "Get Messages",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/messages/getMessages/:chatRoomId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "messages", "getMessages", ":chatRoomId"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Chat Rooms",
+      "item": [
+        {
+          "name": "Get User Chat Rooms",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/v1/chatrooms",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "v1", "chatrooms"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Health Check",
+      "item": [
+        {
+          "name": "API Health Check",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/",
+              "host": ["{{baseUrl}}"],
+              "path": [""]
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://update-service-54ka.onrender.com",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    }
+  ]
+}
