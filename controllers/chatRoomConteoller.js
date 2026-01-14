@@ -1,4 +1,4 @@
-import { ChatRoom } from "../models/ChatRoom"; // Adjust the path based on your project structure
+import ChatRoom from "../models/ChatRoom.js";
 
 // Controller to get all chat rooms for the authenticated user
 export const getUserChatRooms = async (req, res) => {
