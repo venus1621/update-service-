@@ -12,7 +12,7 @@ import governmentInstitutionRoutes from "./routers/governmentInstitutionRoutes.j
 import infoRequestRoutes from "./routers/infoRequestRoute.js";
 import applicationRoutes from "./routers/applicationRoute.js";
 import user from "./routers/userRoutes.js";
-
+import bargainRoute from "./routers/bargainRoute.js";
 // Load environment variables
 dotenv.config();
 
@@ -39,6 +39,7 @@ app.use("/api/v1/infoRequest", infoRequestRoutes);
 app.use("/api/v1/application", applicationRoutes);
 app.use("/api/v1/service-categories", serviceCategoriesRoutes);
 app.use("/api/v1/government-institutions", governmentInstitutionRoutes);
+app.use("/api/v1/bargain", bargainRoute);
 // Health check route
 app.get("/", (req, res) => {
   res.json({
