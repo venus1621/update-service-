@@ -1,5 +1,5 @@
 import Officer from "../models/Officer.js";
-import mongoose, { connect } from "mongoose";
+import mongoose from "mongoose";
 
 /* =========================================================
    CREATE OFFICER (Only required fields allowed)
@@ -20,7 +20,7 @@ export const createOfficer = async (req, res) => {
     console.log("Service Category ID:", serviceCategory);
     console.log("institution ", institution);
     // Let Mongoose handle validation (required fields, types, uniqueness, etc.)
-    const officer = await Officer.create(...allowedFields, { connect: 50 });
+    const officer = await Officer.create(allowedFields);
 
     res.status(201).json({
       success: true,

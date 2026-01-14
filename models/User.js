@@ -46,6 +46,10 @@ const userSchema = new mongoose.Schema(
     passwordChangedAt: {
       type: Date,
     },
+    connects: {
+      type: Number,
+      default: 50,
+    },
 
     isPhoneVerified: {
       type: Boolean,

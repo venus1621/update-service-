@@ -37,7 +37,10 @@ const officerSchema = new Schema(
       min: 0,
       default: 0,
     },
-
+    connects: {
+      type: Number,
+      default: 50,
+    },
     serviceCategory: {
       type: Schema.Types.ObjectId,
       ref: "ServiceCategory",
