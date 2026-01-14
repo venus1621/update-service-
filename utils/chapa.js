@@ -123,9 +123,9 @@ export const handleApplicationPayment = async (applicationId, paymentData, res) 
     }
 
     const application = await Application.findById(applicationId).populate({
-    path: "infoRequest",
-    populate: { path: "createdBy", select: "_id name phone_number" },
-  });;
+      path: "infoRequest",
+      populate: { path: "createdBy", select: "_id name phone_number" },
+    });
     if (!application) {
       return res.status(404).json({ message: "Application not found" });
     }
@@ -133,18 +133,17 @@ export const handleApplicationPayment = async (applicationId, paymentData, res) 
     if (application.status === "approved") {
       return res.status(200).json({ message: "Application already approved" });
     }
-    console.log(paymentData);
 
     application.status = "approved";
 
     application.transaction = {
-      tx_ref: paymentData.tx_ref ,
-      amount: paymentData.amount ,
-     status:paymentData.status,
-      paidAt: paymentData.created_at ,
-     
+      tx_ref: paymentData.tx_ref,
+      amount: paymentData.amount,
+      status: paymentData.status,
+      paidAt: paymentData.created_at,
     };
 
+    console.log(application);
     await application.save();
 
     // Create chat room between applicant and infoRequest owner
@@ -152,8 +151,7 @@ export const handleApplicationPayment = async (applicationId, paymentData, res) 
     const infoOwnerId = application.infoRequest.createdBy._id;
 
     let chatRoomId = null;
-    if (!applicantId.equals(infoOwnerId)) { 
-     
+    if (!applicantId.equals(infoOwnerId)) {
       const chatRoom = new ChatRoom({
         participants: [applicantId, infoOwnerId],
         application: application._id,
@@ -165,9 +163,14 @@ export const handleApplicationPayment = async (applicationId, paymentData, res) 
       await chatRoom.save();
       chatRoomId = chatRoom._id;
 
-      console.log(`Chat room created: ${chatRoom._id} for application ${applicationId}`);
+      console.log(
+        `Chat room created: ${chatRoom._id} for application ${applicationId}`
+      );
+      console.log(chatRoom);
     } else {
-      console.warn("Applicant and info owner are the same user; skipping chat room creation");
+      console.warn(
+        "Applicant and info owner are the same user; skipping chat room creation"
+      );
     }
 
     return res.status(200).json({
