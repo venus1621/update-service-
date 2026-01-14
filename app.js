@@ -13,6 +13,7 @@ import infoRequestRoutes from "./routers/infoRequestRoute.js";
 import applicationRoutes from "./routers/applicationRoute.js";
 import user from "./routers/userRoutes.js";
 import bargainRoute from "./routers/bargainRoute.js";
+import chapaRouter from "./routers/chapa.js";
 // Load environment variables
 dotenv.config();
 
@@ -40,6 +41,8 @@ app.use("/api/v1/application", applicationRoutes);
 app.use("/api/v1/service-categories", serviceCategoriesRoutes);
 app.use("/api/v1/government-institutions", governmentInstitutionRoutes);
 app.use("/api/v1/bargain", bargainRoute);
+app.use("/api/v1/chapa", chapaRouter);
+
 // Health check route
 app.get("/", (req, res) => {
   res.json({

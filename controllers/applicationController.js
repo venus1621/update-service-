@@ -252,8 +252,7 @@ export const acceptApplication = async (req, res) => {
 
     const application = await Application.findById(applicationId)
       .populate("infoRequest", "createdBy status")
-      .populate("officer", "name email phone_number");
-
+      .populate("officer", "name email phoneNumber");
     if (!application) {
       return res.status(404).json({ message: "Application not found" });
     }
@@ -263,11 +262,15 @@ export const acceptApplication = async (req, res) => {
     }
 
     if (application.status !== "pending") {
-      return res.status(400).json({ message: `Application is already ${application.status}` });
+      return res
+        .status(400)
+        .json({ message: `Application is already ${application.status}` });
     }
 
     if (application.infoRequest.status !== "pending") {
-      return res.status(400).json({ message: "Info request is no longer active" });
+      return res
+        .status(400)
+        .json({ message: "Info request is no longer active" });
     }
 
     // Initialize Chapa payment
@@ -278,9 +281,9 @@ export const acceptApplication = async (req, res) => {
       user: {
         name: application.officer.name,
         email: application.officer.email,
-        phone_number: application.officer.phone_number,
+        phone_number: application.officer.phoneNumber,
       },
-      payFor: "application", // or "service"
+      payFor: "app", // or "service"
       title: `Payment for service application`,
     });
 

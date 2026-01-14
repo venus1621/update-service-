@@ -1,5 +1,5 @@
 import { Router } from "express";
-import chapaWebhook from "../utils/chapa.js";
+import { chapaWebhook } from "../utils/chapa.js";
 
 const router= Router();
 

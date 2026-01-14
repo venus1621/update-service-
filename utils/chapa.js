@@ -16,59 +16,63 @@ export const initializeChapaPayment = async ({
   const chapaSecretKey = process.env.CHAPA_SECRET_KEY;
   if (!chapaSecretKey) throw new Error("CHAPA_SECRET_KEY is not configured");
 
-  if (!amount || !currency) {
-    throw new Error("amount and currency are required.");
-  }
+if (!amount || !currency) {
+  throw new Error("amount and currency are required.");
+}
 
-  if (!user?.name) {
-    throw new Error("User name is required.");
-  }
+if (!user?.name) {
+  throw new Error("User name is required.");
+}
 
-  // Build tx_ref differently depending on payFor
-  let txRef;
-  if (payFor === "app") {
-    if (!applicationId) throw new Error("applicationId is required for application payments.");
-    txRef = `app-${applicationId}-${Date.now()}`;
-  } else if (payFor === "conn") {
-    if (!connects || isNaN(connects) || connects <= 0) {
-      throw new Error("Valid connects amount is required for connect payments.");
-    }
-    txRef = `conn-${user._id}-${connects}-${Date.now()}`;
-  } else {
-    throw new Error("Invalid payFor type.");
+// Build tx_ref differently depending on payFor
+let txRef;
+if (payFor === "app") {
+  if (!applicationId)
+    throw new Error("applicationId is required for application payments.");
+  txRef = `app-${applicationId}-${Date.now()}`;
+} else if (payFor === "conn") {
+  if (!connects || isNaN(connects) || connects <= 0) {
+    throw new Error("Valid connects amount is required for connect payments.");
   }
+  txRef = `conn-${user._id}-${connects}-${Date.now()}`;
+} else {
+  throw new Error("Invalid payFor type.");
+}
+console.log("Generated txRef:", process.env.SERVER_URL);
 
-  try {
-    const response = await axios.post(
-      "https://api.chapa.co/v1/transaction/initialize",
-      {
-        amount,
-        currency,
-        first_name: user.name,
-        phone_number: user.phone_number,
-        tx_ref: txRef,
-        callback_url: `${process.env.SERVER_URL}/api/v1/chapa/chapa-webhook`,
-        customization: {
-          title: payFor === "app" ? "For Application" : "For Connects",
-        },
+try {
+  const response = await axios.post(
+    "https://api.chapa.co/v1/transaction/initialize",
+    {
+      amount,
+      currency,
+      first_name: user.name,
+      phone_number: user.phoneNumber,
+      tx_ref: txRef,
+      callback_url: `${process.env.SERVER_URL}/api/v1/chapa/chapa-webhook`,
+      customization: {
+        title: payFor === "app" ? "For Application" : "For Connects",
       },
-      {
-        headers: {
-          Authorization: `Bearer ${chapaSecretKey}`,
-          "Content-Type": "application/json",
-        },
-      }
-    );
- 
+    },
+    {
+      headers: {
+        Authorization: `Bearer ${chapaSecretKey}`,
+        "Content-Type": "application/json",
+      },
+    }
+  );
 
-    return {
+  return {
     tx_ref: txRef,
     checkout_url: response.data.data.checkout_url,
   };
-  } catch (error) {
-    console.error("Chapa payment initialization failed:", error.response?.data || error.message);
-    throw error;
-  }
+} catch (error) {
+  console.error(
+    "Chapa payment initialization failed:",
+    error.response?.data || error.message
+  );
+  throw error;
+}
 };
 
 export const chapaWebhook = async (req, res) => {
@@ -238,3 +242,4 @@ export const handleConnectPurchase = async (entityId, paymentData, res) => {
     return res.status(500).json({ message: "Failed to complete connect purchase", error: error.message });
   }
 };
+

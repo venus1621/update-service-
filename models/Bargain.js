@@ -28,4 +28,4 @@ const bargainSchema = new Schema(
 
 const Bargain = mongoose.model("Bargain", bargainSchema);
 
-export { Bargain };
+export default Bargain;
