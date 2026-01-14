@@ -294,8 +294,8 @@ export const acceptApplication = async (req, res) => {
       status: "success",
       message: "Application accepted. Proceed with payment.",
       data: {
-        paymentUrl: chapaResponse.data.checkout_url,
-        tx_ref: chapaResponse.data.tx_ref,
+        paymentUrl: chapaResponse.checkout_url,
+        tx_ref: chapaResponse.tx_ref,
         application,
       },
     });

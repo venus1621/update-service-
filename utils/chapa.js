@@ -38,7 +38,7 @@ if (payFor === "app") {
 } else {
   throw new Error("Invalid payFor type.");
 }
-console.log("Generated txRef:", process.env.SERVER_URL);
+
 
 try {
   const response = await axios.post(
@@ -61,11 +61,11 @@ try {
       },
     }
   );
-
-  return {
-    tx_ref: txRef,
-    checkout_url: response.data.data.checkout_url,
-  };
+console.log("Chapa initialization response:", response.data.data.checkout_url);
+return {
+  tx_ref: txRef,
+  checkout_url: response.data.data.checkout_url,
+};
 } catch (error) {
   console.error(
     "Chapa payment initialization failed:",
