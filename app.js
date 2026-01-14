@@ -15,6 +15,7 @@ import user from "./routers/userRoutes.js";
 import bargainRoute from "./routers/bargainRoute.js";
 import chapaRouter from "./routers/chapa.js";
 import chatRoomRoutes from "./routers/chatroomRoute.js";
+import message from "./routers/messageRoute.js";
 // Load environment variables
 dotenv.config();
 
@@ -44,6 +45,7 @@ app.use("/api/v1/government-institutions", governmentInstitutionRoutes);
 app.use("/api/v1/bargain", bargainRoute);
 app.use("/api/v1/chapa", chapaRouter);
 app.use("/api/v1/chatrooms", chatRoomRoutes);
+app.use("/api/v1/messages", message);
 
 // Health check route
 app.get("/", (req, res) => {

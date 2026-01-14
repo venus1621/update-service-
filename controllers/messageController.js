@@ -70,6 +70,7 @@ export const getMessages = async (req, res) => {
     const { chatRoomId } = req.params;
     const { page = 1, limit = 30 } = req.query;
 
+    console.log("dasd");
     if (!chatRoomId) {
       return res.status(400).json({ message: "Chat room ID is required" });
     }
@@ -82,7 +83,7 @@ export const getMessages = async (req, res) => {
       .populate("sender", "name _id")
       .populate("receiver", "name _id")
       .sort({ createdAt: -1 }) // latest first
-      .skip(skip)
+
       .limit(parseInt(limit));
 
     // Mark undelivered messages as delivered
